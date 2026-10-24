@@ -30,6 +30,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -57,18 +59,22 @@ import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
 @Composable
-fun ProgressScreen(store: Store, onRetry: () -> Unit, onOpenStep: (Int) -> Unit) {
+fun ProgressScreen(store: Store, onRetry: () -> Unit, onSettings: () -> Unit, onOpenStep: (Int) -> Unit) {
     store.tick // re-read day counters when they change
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        Text("Progres", color = C.text, style = MaterialTheme.typography.headlineLarge)
-        LevelCard(store)
-        CountdownCard(store)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("Progres", color = C.text, style = MaterialTheme.typography.headlineLarge, modifier = Modifier.weight(1f))
+            Icon(Icons.Rounded.Settings, "Pengaturan", tint = C.text,
+                modifier = Modifier.clip(RoundedCornerShape(50)).clickable(onClick = onSettings).testTag("open_settings").padding(8.dp).size(24.dp))
+        }
+        OverallCard(store)
+        TotalsCard(store)
         SectionTitle("Per mapel · ketuk untuk detail")
         SubjectRings(store, onOpenStep)
-        SectionTitle("Aktivitas harian · ketuk batang")
+        SectionTitle("Aktivitas 7 hari terakhir")
         ActivityChart(store)
         SectionTitle("Lencana")
         Badges(store)
@@ -78,49 +84,42 @@ fun ProgressScreen(store: Store, onRetry: () -> Unit, onOpenStep: (Int) -> Unit)
         PhotoStrip(store)
         SectionTitle("Sumber materi")
         Sources()
-        ResetButton(store)
         Spacer(Modifier.height(20.dp))
     }
 }
 
 @Composable
-private fun LevelCard(store: Store) {
+private fun OverallCard(store: Store) {
+    val done = Content.nodes.count { store.nodeDone(it) }
     Row(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(C.violet).padding(20.dp),
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(C.surface).border(1.dp, C.line, RoundedCornerShape(20.dp)).padding(20.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        ProgressRing(store.levelProgress, Color.White, size = 96.dp, stroke = 10.dp) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("LEVEL", color = Color.White.copy(alpha = 0.8f), style = MaterialTheme.typography.labelMedium)
-                AnimatedNumber(store.level, MaterialTheme.typography.headlineLarge, Color.White)
-            }
+        ProgressRing(done / Content.nodes.size.toFloat(), C.violet, size = 88.dp, stroke = 9.dp) {
+            AnimatedNumber(done * 100 / Content.nodes.size, MaterialTheme.typography.titleLarge, C.text, "%")
         }
         Spacer(Modifier.width(18.dp))
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            AnimatedNumber(store.xp, MaterialTheme.typography.headlineMedium, Color.White, " XP")
-            Text("${100 - store.xp % 100} XP lagi ke level ${store.level + 1}", color = Color.White.copy(alpha = 0.9f))
-            Text("${store.streak} hari berturut-turut", color = Color.White, fontWeight = FontWeight.Bold)
+            Text("$done dari ${Content.nodes.size} langkah selesai", color = C.text, style = MaterialTheme.typography.titleMedium)
+            Text("${store.streak} hari berturut-turut", color = C.muted, style = MaterialTheme.typography.bodyMedium)
         }
     }
 }
 
 @Composable
-private fun CountdownCard(store: Store) {
-    val today = LocalDate.now()
-    val toExam = ChronoUnit.DAYS.between(today, LocalDate.parse(Content.EXAM_DATE)).coerceAtLeast(0)
-    val toDeadline = ChronoUnit.DAYS.between(today, LocalDate.parse(Content.MATERIAL_DEADLINE)).coerceAtLeast(0)
-    val materialSteps = Content.steps.filter { it.day <= 6 }
-    val materialDone = materialSteps.count { it.id in store.done }
+private fun TotalsCard(store: Store) {
+    val chapters = Content.steps.filter { it.sections.isNotEmpty() && !it.isReview && !it.isPractice }
+    val chaptersDone = chapters.count { st -> Content.nodes.filter { it.step == st }.all { store.nodeDone(it) } }
+    val quizzes = Content.steps.filter { it.questions.isNotEmpty() }
+    val quizzesDone = quizzes.count { it.id in store.done }
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        Column(Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).background(C.surface).padding(16.dp)) {
-            Text("TKA GELOMBANG 2", color = C.muted, style = MaterialTheme.typography.labelMedium)
-            AnimatedNumber(toExam.toInt(), MaterialTheme.typography.headlineLarge, C.good, " hari")
-            Text("2 sampai 5 November 2026", color = C.muted, style = MaterialTheme.typography.bodyMedium)
+        Column(Modifier.weight(1f).clip(RoundedCornerShape(20.dp)).background(C.surface).border(1.dp, C.line, RoundedCornerShape(20.dp)).padding(16.dp)) {
+            Text("Bab selesai", color = C.muted, style = MaterialTheme.typography.labelMedium)
+            AnimatedNumber(chaptersDone, MaterialTheme.typography.headlineLarge, C.text, "/${chapters.size}")
         }
-        Column(Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).background(C.surface).padding(16.dp)) {
-            Text("MATERI SELESAI", color = C.muted, style = MaterialTheme.typography.labelMedium)
-            AnimatedNumber(materialDone, MaterialTheme.typography.headlineLarge, C.pink, "/${materialSteps.size}")
-            Text(if (toDeadline > 0) "target sebelum 30 Okt ($toDeadline hari)" else "batas 30 Okt", color = C.muted, style = MaterialTheme.typography.bodyMedium)
+        Column(Modifier.weight(1f).clip(RoundedCornerShape(20.dp)).background(C.surface).border(1.dp, C.line, RoundedCornerShape(20.dp)).padding(16.dp)) {
+            Text("Kuis selesai", color = C.muted, style = MaterialTheme.typography.labelMedium)
+            AnimatedNumber(quizzesDone, MaterialTheme.typography.headlineLarge, C.text, "/${quizzes.size}")
         }
     }
 }
@@ -128,14 +127,14 @@ private fun CountdownCard(store: Store) {
 @Composable
 private fun SubjectRings(store: Store, onOpenStep: (Int) -> Unit) {
     var open by remember { mutableStateOf<Subject?>(null) }
-    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(C.surface).padding(14.dp).animateContentSize()) {
+    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(C.surface).padding(14.dp).animateContentSize()) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             listOf(Subject.MAT, Subject.FIS, Subject.BIN, Subject.BIG).forEach { s ->
                 val steps = Content.steps.filter { it.subject == s }
                 val done = steps.count { it.id in store.done }
                 val on = open == s
                 Column(
-                    Modifier.clip(RoundedCornerShape(12.dp)).background(if (on) s.color.copy(alpha = 0.15f) else Color.Transparent)
+                    Modifier.clip(RoundedCornerShape(16.dp)).background(if (on) s.color.copy(alpha = 0.15f) else Color.Transparent)
                         .clickable { open = if (on) null else s }.testTag("ring_${s.name}").padding(6.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
@@ -156,7 +155,7 @@ private fun SubjectRings(store: Store, onOpenStep: (Int) -> Unit) {
                     val done = st.id in store.done
                     val unlocked = store.isUnlocked(idx)
                     Row(
-                        Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(C.surface2)
+                        Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(C.surface2)
                             .clickable(enabled = unlocked) { onOpenStep(idx) }.padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
@@ -165,7 +164,7 @@ private fun SubjectRings(store: Store, onOpenStep: (Int) -> Unit) {
                         Spacer(Modifier.width(10.dp))
                         Column(Modifier.weight(1f)) {
                             Text(st.title, color = C.text, style = MaterialTheme.typography.titleMedium)
-                            Text("Hari ${st.day} · ${st.date}", color = C.muted, style = MaterialTheme.typography.labelMedium)
+                            Text(chapterLabel(st), color = C.muted, style = MaterialTheme.typography.labelMedium)
                         }
                         if (done && st.questions.isNotEmpty()) {
                             val stars = starsFor(store.bestScore(st.id), st.questions.size)
@@ -178,18 +177,21 @@ private fun SubjectRings(store: Store, onOpenStep: (Int) -> Unit) {
     }
 }
 
+private val WEEKDAY = listOf("Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min")
+
 @Composable
 private fun ActivityChart(store: Store) {
-    val days = (0..8).map { LocalDate.parse("2026-10-24").plusDays(it.toLong()) }
+    val today = LocalDate.now()
+    val days = (6 downTo 0).map { today.minusDays(it.toLong()) }
     val answered = days.map { store.questionsAnswered(it) }
     val minutes = days.map { store.focusMinutes(it) }
     val maxA = (answered.maxOrNull() ?: 0).coerceAtLeast(10)
-    var sel by remember { mutableStateOf(days.indexOf(LocalDate.now()).takeIf { it >= 0 } ?: 0) }
+    var sel by remember { mutableStateOf(days.lastIndex) }
     val grow = remember { Animatable(0f) }
     LaunchedEffect(Unit) { grow.animateTo(1f, tween(900, easing = FastOutSlowInEasing)) }
-    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(C.surface).padding(16.dp)) {
+    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(C.surface).padding(16.dp)) {
         Text(
-            "${days[sel].dayOfMonth} ${if (days[sel].monthValue == 10) "Okt" else "Nov"}: ${answered[sel]} soal dijawab · ${minutes[sel] / 60} j ${minutes[sel] % 60} m fokus",
+            "${when (sel) { days.lastIndex -> "Hari ini"; days.lastIndex - 1 -> "Kemarin"; else -> "${days.lastIndex - sel} hari lalu" }}: ${answered[sel]} soal dijawab · ${minutes[sel] / 60} j ${minutes[sel] % 60} m fokus",
             color = C.text, style = MaterialTheme.typography.titleMedium,
         )
         Spacer(Modifier.height(12.dp))
@@ -209,8 +211,8 @@ private fun ActivityChart(store: Store) {
                             ),
                     )
                     Spacer(Modifier.height(4.dp))
-                    Text("${d.dayOfMonth}", color = if (isToday) C.gold else C.muted, style = MaterialTheme.typography.labelMedium,
-                        fontWeight = if (isToday) FontWeight.Black else FontWeight.Medium)
+                    Text(WEEKDAY[d.dayOfWeek.value - 1], color = if (isToday) C.text else C.muted, style = MaterialTheme.typography.labelMedium,
+                        fontWeight = if (isToday) FontWeight.Bold else FontWeight.Medium)
                 }
             }
         }
@@ -220,7 +222,7 @@ private fun ActivityChart(store: Store) {
 @Composable
 private fun Badges(store: Store) {
     Column(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(C.surface).border(2.dp, C.line, RoundedCornerShape(12.dp)).padding(14.dp),
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(C.surface).border(1.dp, C.line, RoundedCornerShape(16.dp)).padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text("${Badge.entries.count { it.name in store.badges }} dari ${Badge.entries.size} lencana", color = C.muted, style = MaterialTheme.typography.labelMedium)
@@ -241,7 +243,7 @@ private fun Badges(store: Store) {
 @Composable
 private fun WrongCard(store: Store, onRetry: () -> Unit) {
     val n = store.wrong.size
-    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(C.surface).padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(C.surface).padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             AnimatedNumber(n, MaterialTheme.typography.headlineLarge, if (n == 0) C.good else C.bad)
             Spacer(Modifier.width(10.dp))
@@ -265,7 +267,7 @@ private fun PhotoStrip(store: Store) {
             if (path.endsWith(".txt")) {
                 val txt = remember(path) { runCatching { File(path).readText() }.getOrDefault("") }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(txt, Modifier.size(110.dp, 140.dp).clip(RoundedCornerShape(12.dp)).background(C.surface2).padding(10.dp),
+                    Text(txt, Modifier.size(110.dp, 140.dp).clip(RoundedCornerShape(16.dp)).background(C.surface2).padding(10.dp),
                         color = C.text, style = MaterialTheme.typography.labelMedium, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                     Text(File(path).nameWithoutExtension.removePrefix("ringkasan_").take(10), color = C.muted, style = MaterialTheme.typography.labelMedium)
                 }
@@ -279,9 +281,9 @@ private fun PhotoStrip(store: Store) {
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 if (bmp != null) {
-                    Image(bmp, "Foto ringkasan", Modifier.size(110.dp, 140.dp).clip(RoundedCornerShape(12.dp)), contentScale = ContentScale.Crop)
+                    Image(bmp, "Foto ringkasan", Modifier.size(110.dp, 140.dp).clip(RoundedCornerShape(16.dp)), contentScale = ContentScale.Crop)
                 } else {
-                    Box(Modifier.size(110.dp, 140.dp).clip(RoundedCornerShape(12.dp)).background(C.surface2), contentAlignment = Alignment.Center) { Text("Foto", color = C.muted) }
+                    Box(Modifier.size(110.dp, 140.dp).clip(RoundedCornerShape(16.dp)).background(C.surface2), contentAlignment = Alignment.Center) { Text("Foto", color = C.muted) }
                 }
                 Text(File(path).nameWithoutExtension.removePrefix("ringkasan_").take(10), color = C.muted, style = MaterialTheme.typography.labelMedium)
             }
@@ -292,12 +294,12 @@ private fun PhotoStrip(store: Store) {
 @Composable
 private fun Sources() {
     val ctx = LocalContext.current
-    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(C.surface).padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(C.surface).padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text("Materi disusun dari kisi-kisi resmi TKA SMA 2026 (Pusmendik Kemendikdasmen) sebagaimana dikutip media berikut. Ketuk untuk membuka.",
             color = C.muted, style = MaterialTheme.typography.bodyMedium)
         Content.sources.forEach { s ->
             Column(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(C.surface2)
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(C.surface2)
                     .clickable { runCatching { ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(s.url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } }
                     .padding(12.dp),
             ) {
@@ -308,18 +310,3 @@ private fun Sources() {
     }
 }
 
-@Composable
-private fun ResetButton(store: Store) {
-    var confirm by remember { mutableStateOf(false) }
-    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-        if (!confirm) {
-            Text("Reset progres", color = C.muted, modifier = Modifier.clip(RoundedCornerShape(12.dp)).clickable { confirm = true }.padding(10.dp))
-        } else {
-            Text("Semua progres, XP, dan lencana akan dihapus.", color = C.bad)
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.padding(top = 8.dp)) {
-                BouncyButton("Batal", Modifier.width(140.dp), secondary = true) { confirm = false }
-                BouncyButton("Reset", Modifier.width(140.dp), color = C.bad) { store.resetAll(); confirm = false }
-            }
-        }
-    }
-}

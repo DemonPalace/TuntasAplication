@@ -107,7 +107,7 @@ fun isPinned(ctx: Context): Boolean {
 }
 
 @Composable
-fun FocusScreen(store: Store, blockedPkg: String?, onDismissBlocked: () -> Unit) {
+fun FocusScreen(store: Store) {
     Box(Modifier.fillMaxSize()) {
         AnimatedContent(store.phase, transitionSpec = { fadeIn(tween(400)) togetherWith fadeOut(tween(200)) }, label = "phase") { p ->
             when (p) {
@@ -115,24 +115,6 @@ fun FocusScreen(store: Store, blockedPkg: String?, onDismissBlocked: () -> Unit)
                 1, 2 -> SessionRunning(store)
                 else -> SessionSummary(store)
             }
-        }
-        AnimatedVisibility(blockedPkg != null, modifier = Modifier.align(Alignment.TopCenter)) {
-            BlockedBanner(blockedPkg.orEmpty(), onDismissBlocked)
-        }
-    }
-}
-
-@Composable
-private fun BlockedBanner(pkg: String, onDismiss: () -> Unit) {
-    val ctx = LocalContext.current
-    val label = remember(pkg) { appLabel(ctx, pkg) }
-    Row(
-        Modifier.padding(12.dp).fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(C.bad).clickable(onClick = onDismiss).padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(Modifier.weight(1f)) {
-            Text("$label diblokir selama sesi", color = Color.White, style = MaterialTheme.typography.titleMedium)
-            Text("Ketuk untuk menutup.", color = Color.White.copy(alpha = 0.9f), style = MaterialTheme.typography.bodyMedium)
         }
     }
 }
@@ -155,7 +137,7 @@ private fun SessionSetup(store: Store) {
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         Text("Sesi Harian", color = C.text, style = MaterialTheme.typography.headlineLarge)
-        Text("Urutan sesi: belajar, latihan soal, lalu ringkasan. Selama sesi, aplikasi disematkan, layar tetap menyala, dan aplikasi lain ditutup otomatis.",
+        Text("Urutan sesi: belajar, latihan soal, lalu ringkasan. Selama sesi, aplikasi disematkan dan layar tetap menyala.",
             color = C.muted, style = MaterialTheme.typography.bodyLarge)
 
         // The three phases in order.
@@ -169,9 +151,9 @@ private fun SessionSetup(store: Store) {
         presets.forEachIndexed { i, p ->
             val on = i == pick
             Row(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp))
                     .background(if (on) C.violet.copy(alpha = 0.18f) else C.surface)
-                    .border(2.dp, if (on) C.violet else C.line, RoundedCornerShape(12.dp))
+                    .border(2.dp, if (on) C.violet else C.line, RoundedCornerShape(16.dp))
                     .clickable { pick = i }.testTag("preset_$i").padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -183,11 +165,6 @@ private fun SessionSetup(store: Store) {
             }
         }
 
-        val blockerOn = isBlockerEnabled(ctx)
-        if (!blockerOn) {
-            Text("Pemblokir belum aktif, jadi aplikasi lain belum bisa ditutup otomatis. Aktifkan di tab Blokir.",
-                color = C.gold, style = MaterialTheme.typography.bodyMedium)
-        }
         Text("Saat mulai, Android akan bertanya \"Sematkan aplikasi?\". Pilih Ya atau Mengerti. Kalau tidak muncul, aktifkan di Setelan, Keamanan, Sematkan aplikasi.",
             color = C.muted, style = MaterialTheme.typography.bodyMedium)
 
@@ -200,7 +177,6 @@ private fun SessionSetup(store: Store) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             MiniStat("Sesi tuntas", "${store.sessionsDone()}", C.good, Modifier.weight(1f))
             MiniStat("Waktu fokus", fmtMin(store.focusMinutes()), C.violet, Modifier.weight(1f))
-            MiniStat("Diblokir", "${store.blockedHits()}x", C.bad, Modifier.weight(1f))
         }
     }
 }
@@ -208,7 +184,7 @@ private fun SessionSetup(store: Store) {
 @Composable
 private fun PhaseChip(label: String, value: String, color: Color, modifier: Modifier) {
     Column(
-        modifier.clip(RoundedCornerShape(12.dp)).border(2.dp, C.line, RoundedCornerShape(12.dp)).padding(vertical = 12.dp),
+        modifier.clip(RoundedCornerShape(16.dp)).border(1.dp, C.line, RoundedCornerShape(16.dp)).padding(vertical = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(label, color = C.text, style = MaterialTheme.typography.labelLarge)
@@ -218,7 +194,7 @@ private fun PhaseChip(label: String, value: String, color: Color, modifier: Modi
 
 @Composable
 private fun MiniStat(label: String, value: String, color: Color, modifier: Modifier) {
-    Column(modifier.clip(RoundedCornerShape(12.dp)).background(C.surface).border(2.dp, C.line, RoundedCornerShape(12.dp)).padding(14.dp)) {
+    Column(modifier.clip(RoundedCornerShape(16.dp)).background(C.surface).border(1.dp, C.line, RoundedCornerShape(16.dp)).padding(14.dp)) {
         Text(label, color = C.muted, style = MaterialTheme.typography.labelMedium)
         Text(value, color = color, style = MaterialTheme.typography.titleLarge)
     }
@@ -294,21 +270,21 @@ private fun SessionRunning(store: Store) {
 private fun StepDot(label: String, active: Boolean, done: Boolean, color: Color, modifier: Modifier) {
     Text(
         (if (done) "✓ " else "") + label,
-        modifier.clip(RoundedCornerShape(12.dp)).background(if (active) color else if (done) color.copy(alpha = 0.3f) else C.surface)
+        modifier.clip(RoundedCornerShape(16.dp)).background(if (active) color else if (done) color.copy(alpha = 0.3f) else C.surface)
             .padding(vertical = 8.dp),
         color = if (active) Color.White else if (done) C.text else C.muted, textAlign = TextAlign.Center,
         style = MaterialTheme.typography.labelLarge,
     )
 }
 
-/** Must be held for 5 seconds; ends the session without XP. */
+/** Must be held for 5 seconds; ends the session without counting it. */
 @Composable
 private fun EmergencyButton(onExit: () -> Unit) {
     val hold = remember { Animatable(0f) }
     val scope = rememberCoroutineScope()
     var job by remember { mutableStateOf<Job?>(null) }
     Box(
-        Modifier.fillMaxWidth().height(54.dp).clip(RoundedCornerShape(12.dp)).background(C.surface).border(2.dp, C.line, RoundedCornerShape(12.dp))
+        Modifier.fillMaxWidth().height(54.dp).clip(RoundedCornerShape(16.dp)).background(C.surface).border(1.dp, C.line, RoundedCornerShape(16.dp))
             .pointerInput(Unit) {
                 detectTapGestures(onPress = {
                     job = scope.launch {
@@ -325,7 +301,7 @@ private fun EmergencyButton(onExit: () -> Unit) {
     ) {
         Box(Modifier.fillMaxWidth(hold.value).height(54.dp).background(C.bad.copy(alpha = 0.6f)))
         Text(
-            if (hold.value > 0f) "Tahan ${(5 - hold.value * 5).toInt() + 1} detik lagi" else "Keluar darurat: tahan 5 detik (tanpa XP)",
+            if (hold.value > 0f) "Tahan ${(5 - hold.value * 5).toInt() + 1} detik lagi" else "Keluar darurat: tahan 5 detik",
             color = C.text, style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(horizontal = 16.dp),
         )
     }
@@ -349,7 +325,7 @@ private fun SessionSummary(store: Store) {
         ) {
             Text("Tahap 3 dari 3", color = C.good, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Black)
             Text("Ringkasan hari ini", color = C.text, style = MaterialTheme.typography.headlineLarge)
-            Text("Tulis rumus, konsep, dan soal yang salah hari ini. Pin dilepas agar kamera bisa dibuka. Sesi tercatat tuntas (+100 XP) setelah ringkasan tersimpan.",
+            Text("Tulis rumus, konsep, dan soal yang salah hari ini. Pin dilepas agar kamera bisa dibuka. Sesi tercatat selesai setelah ringkasan tersimpan.",
                 color = C.muted, style = MaterialTheme.typography.bodyLarge)
             if (mode == 0) {
                 BouncyButton("Foto catatan", Modifier.fillMaxWidth().testTag("take_photo"),

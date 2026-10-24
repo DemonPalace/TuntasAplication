@@ -35,7 +35,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
-          name: Jalur TKA (versi terbaru)
+          name: Tuntas (versi terbaru)
           prerelease: false
           make_latest: true
           files: TUNTAS.apk

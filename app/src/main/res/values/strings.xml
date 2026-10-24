@@ -1,5 +1,3 @@
 <resources>
-    <string name="app_name">Jalur TKA</string>
-    <string name="blocker_label">Jalur TKA: Pemblokir Distraksi</string>
-    <string name="blocker_desc">Menutup aplikasi yang kamu pilih (misalnya TikTok, Instagram, game) selama sesi fokus atau setelah batas harian habis, lalu mengembalikanmu ke Jalur TKA. Tidak membaca isi layar, pesan, atau kata sandi.</string>
+    <string name="app_name">Tuntas</string>
 </resources>

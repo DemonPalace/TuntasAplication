@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -31,6 +32,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -67,8 +69,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
-import java.time.LocalDate
-import java.time.temporal.ChronoUnit
 import kotlin.math.roundToInt
 import kotlin.math.sin
 
@@ -80,38 +80,45 @@ private fun swing(i: Int) = sin(i * 0.9).toFloat()
 
 @Composable
 fun PathScreen(store: Store, onOpen: (Int) -> Unit) {
-    val scroll = rememberScrollState()
+    var subject by remember { mutableStateOf(store.mapSubject) }
     var selected by remember { mutableStateOf<Int?>(null) }
-    val current = store.currentNode.takeIf { it >= 0 }
+    val current = store.currentNode(subject).takeIf { it >= 0 }
+    // Chapters of this subject in path order; each chapter is its run of sub-chapter stops plus its quiz.
+    val chapters = remember(subject) {
+        Content.nodes.indices.filter { Content.nodes[it].step.subject == subject }.groupBy { Content.nodes[it].step.id }.values.toList()
+    }
+    val scroll = rememberScrollState()
     val density = LocalDensity.current
 
-    // Bring the current stop into view when the map opens.
-    LaunchedEffect(Unit) {
+    // Bring the current stop into view when the map opens or the subject changes.
+    LaunchedEffect(subject) {
+        scroll.scrollTo(0)
         val idx = current ?: return@LaunchedEffect
-        val day = Content.nodes[idx].step.day
-        val px = with(density) { (ROW * idx + 150.dp * day - 260.dp).toPx() }.roundToInt().coerceAtLeast(0)
-        scroll.animateScrollTo(px, tween(900))
+        val ch = chapters.indexOfFirst { idx in it }
+        val before = chapters.take(ch).sumOf { it.size } + chapters[ch].indexOf(idx)
+        val px = with(density) { (ROW * before + 96.dp * ch + 220.dp - 240.dp).toPx() }.roundToInt().coerceAtLeast(0)
+        scroll.animateScrollTo(px, tween(700))
     }
 
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize()) {
-            MapHeader(store)
+            MapHeader(store, subject) { subject = it; store.mapSubject = it; selected = null }
             Column(
                 Modifier.fillMaxSize().verticalScroll(scroll).padding(bottom = 140.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Content.nodes.indices.groupBy { Content.nodes[it].step.day }.forEach { (day, idxs) ->
-                    DayBanner(day, idxs.map { Content.nodes[it].step }.distinct())
+                if (current != null) ContinueCard(store, current) { onOpen(current) }
+                chapters.forEach { idxs ->
+                    ChapterHeader(Content.nodes[idxs.first()].step, idxs.size)
                     DayPath(store, idxs, current, selected) { idx ->
                         selected = if (selected == idx) null else idx
                     }
-                    Chest(store, day)
                 }
-                FinishFlag(store)
+                FinishFlag(store, subject)
             }
         }
 
-        // Popover card for the tapped stop, Duolingo style.
+        // Popover card for the tapped stop.
         val sel = selected
         AnimatedVisibility(
             visible = sel != null,
@@ -125,48 +132,104 @@ fun PathScreen(store: Store, onOpen: (Int) -> Unit) {
     }
 }
 
+private val MAP_SUBJECTS = listOf(Subject.MAT, Subject.FIS, Subject.BIN, Subject.BIG, Subject.MIX)
+
 @Composable
-private fun MapHeader(store: Store) {
-    val daysLeft = ChronoUnit.DAYS.between(LocalDate.now(), LocalDate.parse(Content.EXAM_DATE)).coerceAtLeast(0)
-    val doneCount = Content.nodes.count { store.nodeDone(it) }
+private fun MapHeader(store: Store, subject: Subject, onSubject: (Subject) -> Unit) {
+    val nodes = Content.nodes.filter { it.step.subject == subject }
+    val doneCount = nodes.count { store.nodeDone(it) }
     Column(
-        Modifier.fillMaxWidth().background(C.bg).padding(horizontal = 16.dp, vertical = 10.dp),
+        Modifier.fillMaxWidth().background(C.bg).padding(top = 12.dp, bottom = 10.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            HeaderChip("${store.streak} hari beruntun")
-            HeaderChip("${store.xp} XP")
-            HeaderChip("Level ${store.level}")
-            Spacer(Modifier.weight(1f))
-            HeaderChip("TKA $daysLeft hari lagi")
+        Row(Modifier.padding(horizontal = 20.dp), verticalAlignment = Alignment.Bottom) {
+            Text("Jalur", color = C.text, style = MaterialTheme.typography.headlineLarge, modifier = Modifier.weight(1f))
+            val all = Content.nodes.count { store.nodeDone(it) } * 100 / Content.nodes.size
+            Text("${store.streak} hari beruntun · $all% selesai", color = C.muted, style = MaterialTheme.typography.labelLarge,
+                modifier = Modifier.padding(bottom = 6.dp))
         }
-        LinearBar(doneCount / Content.nodes.size.toFloat(), C.good, Modifier.fillMaxWidth(), 10.dp)
-        Text("$doneCount dari ${Content.nodes.size} langkah selesai", color = C.muted, style = MaterialTheme.typography.labelLarge)
+        Row(
+            Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            MAP_SUBJECTS.forEach { s ->
+                val on = s == subject
+                Row(
+                    Modifier.clip(RoundedCornerShape(50))
+                        .background(if (on) C.text else C.surface)
+                        .border(1.dp, if (on) C.text else C.line, RoundedCornerShape(50))
+                        .clickable { onSubject(s) }.testTag("subject_${s.name}")
+                        .padding(horizontal = 14.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Box(Modifier.size(8.dp).clip(CircleShape).background(s.color))
+                    Spacer(Modifier.width(6.dp))
+                    Text(s.label, color = if (on) C.bg else C.text, style = MaterialTheme.typography.labelLarge)
+                }
+            }
+        }
+        Column(Modifier.padding(horizontal = 20.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            LinearBar(if (nodes.isEmpty()) 0f else doneCount / nodes.size.toFloat(), subject.color, Modifier.fillMaxWidth(), 6.dp)
+            Text("$doneCount dari ${nodes.size} langkah ${subject.label} selesai", color = C.muted, style = MaterialTheme.typography.labelMedium)
+        }
+    }
+}
+
+/** The next unfinished stop of the chosen subject, so a session can start without scrolling the map. */
+@Composable
+private fun ContinueCard(store: Store, idx: Int, onStart: () -> Unit) {
+    val node = Content.nodes[idx]
+    val step = node.step
+    Column(
+        Modifier.padding(horizontal = 16.dp, vertical = 8.dp).fillMaxWidth()
+            .clip(RoundedCornerShape(24.dp)).background(C.surface).border(1.dp, C.line, RoundedCornerShape(24.dp))
+            .padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text("Lanjutkan · ${chapterLabel(step)}", color = C.muted, style = MaterialTheme.typography.labelMedium)
+                Text(
+                    if (node.isQuiz) "Latihan: ${step.title}" else step.sections[node.section].title,
+                    color = C.text, style = MaterialTheme.typography.titleLarge, maxLines = 2,
+                )
+                Text(
+                    if (node.isQuiz) "${step.questions.size} soal" else step.title,
+                    color = C.muted, style = MaterialTheme.typography.bodyMedium, maxLines = 1,
+                )
+            }
+            Mascot(MascotMood.IDLE, size = 64.dp)
+        }
+        Spacer(Modifier.height(6.dp))
+        BouncyButton("Mulai", Modifier.fillMaxWidth().testTag("continue_step"), onClick = onStart)
+    }
+}
+
+fun chapterLabel(step: Step): String {
+    val ch = chapterNo(step)
+    return when {
+        ch > 0 -> "Bab $ch"
+        step.isPractice -> "Paket soal"
+        else -> step.subject.label
     }
 }
 
 @Composable
-private fun HeaderChip(text: String) {
-    Text(text, Modifier.clip(RoundedCornerShape(12.dp)).border(2.dp, C.line, RoundedCornerShape(12.dp))
-        .padding(horizontal = 8.dp, vertical = 4.dp), color = C.text, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
-}
-
-@Composable
-private fun DayBanner(day: Int, steps: List<Step>) {
-    val main = steps.first().subject.color
-    Box(
-        Modifier.padding(horizontal = 16.dp, vertical = 14.dp).fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(main)
-            .padding(horizontal = 18.dp, vertical = 14.dp),
-    ) {
-        Column {
-            Text("HARI $day · ${steps.first().date.uppercase()}", color = Color.White.copy(alpha = 0.85f),
-                style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.ExtraBold)
-            Text(steps.filter { !it.isPractice }.ifEmpty { steps }.joinToString(" · ") { it.title }, color = Color.White, style = MaterialTheme.typography.titleMedium, maxLines = 2)
-            Text("${Content.nodes.count { it.step.day == day }} langkah · ${steps.sumOf { it.questions.size }} soal",
-                color = Color.White.copy(alpha = 0.85f), style = MaterialTheme.typography.labelMedium)
-        }
+private fun ChapterHeader(step: Step, stops: Int) {
+    Column(Modifier.padding(start = 20.dp, end = 20.dp, top = 24.dp, bottom = 8.dp).fillMaxWidth()) {
+        Text(chapterLabel(step).uppercase(), color = step.subject.color,
+            style = MaterialTheme.typography.labelMedium, letterSpacing = 0.8.sp)
+        Spacer(Modifier.height(2.dp))
+        Text(step.title, color = C.text, style = MaterialTheme.typography.titleLarge, maxLines = 2)
+        Text(
+            buildString {
+                val reading = step.sections.size
+                if (reading > 0) append("$reading subbab")
+                if (step.questions.isNotEmpty()) { if (isNotEmpty()) append(" · "); append("${step.questions.size} soal") }
+                if (isEmpty()) append("$stops langkah")
+            },
+            color = C.muted, style = MaterialTheme.typography.labelMedium,
+        )
     }
 }
 
@@ -183,9 +246,9 @@ private fun DayPath(store: Store, indices: List<Int>, current: Int?, selected: I
                 val b = Offset(size.width / 2 + swing(indices[k + 1]) * swingPx, rowPx * (k + 1.5f))
                 val doneLeg = store.nodeDone(Content.nodes[indices[k]])
                 drawLine(
-                    if (doneLeg) C.gold.copy(alpha = 0.8f) else C.line,
-                    a, b, strokeWidth = 10f, cap = StrokeCap.Round,
-                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(2f, 26f)),
+                    if (doneLeg) C.violet.copy(alpha = 0.5f) else C.line,
+                    a, b, strokeWidth = 8f, cap = StrokeCap.Round,
+                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(2f, 22f)),
                 )
             }
         }
@@ -216,7 +279,7 @@ private fun MapStop(store: Store, idx: Int, isCurrent: Boolean, isSelected: Bool
     val disc = if (node.isQuiz) NODE else NODE - 10.dp
 
     val base = when {
-        done -> C.gold
+        done -> step.subject.color
         unlocked -> step.subject.color
         else -> C.surface2
     }
@@ -225,9 +288,9 @@ private fun MapStop(store: Store, idx: Int, isCurrent: Boolean, isSelected: Bool
             Text(
                 "Mulai",
                 Modifier
-                    .clip(RoundedCornerShape(12.dp)).background(C.surface).border(2.dp, step.subject.color, RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(50)).background(C.text)
                     .padding(horizontal = 12.dp, vertical = 4.dp),
-                color = step.subject.color, fontWeight = FontWeight.ExtraBold, style = MaterialTheme.typography.labelLarge,
+                color = C.bg, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelMedium,
             )
             Spacer(Modifier.height(6.dp))
         }
@@ -236,9 +299,11 @@ private fun MapStop(store: Store, idx: Int, isCurrent: Boolean, isSelected: Bool
             contentAlignment = Alignment.Center,
         ) {
             Box(
-                Modifier.size(disc).clip(CircleShape)
+                Modifier
+                    .then(if (isCurrent || isSelected) Modifier.border(3.dp, step.subject.color.copy(alpha = 0.35f), CircleShape).padding(6.dp) else Modifier)
+                    .size(disc).clip(CircleShape)
                     .background(if (pressed) darken(base, 0.9f) else base)
-                    .border(if (isCurrent || isSelected) 4.dp else 2.dp, if (isCurrent || isSelected) C.text else darken(base), CircleShape)
+                    .then(if (done) Modifier.border(3.dp, C.surface, CircleShape) else Modifier)
                     .clickable(src, null) {
                         if (unlocked) {
                             haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
@@ -274,33 +339,13 @@ fun starsFor(correct: Int, total: Int): Int = when {
     else -> 1
 }
 
-/** Bonus XP once every stop of a day is done. */
 @Composable
-private fun Chest(store: Store, day: Int) {
-    val ready = store.dayDone(day)
-    val claimed = remember(store.tick, store.xp) { store.chestClaimed(day) }
-    Box(Modifier.fillMaxWidth().padding(horizontal = 40.dp, vertical = 16.dp), contentAlignment = Alignment.Center) {
-        if (ready && !claimed) {
-            BouncyButton("Ambil bonus hari $day (+25 XP)", Modifier.fillMaxWidth().testTag("chest_$day"), color = C.gold) {
-                store.claimChest(day)
-            }
-        } else {
-            Text(
-                if (claimed) "Bonus hari $day sudah diambil (+25 XP)" else "Bonus hari $day: +25 XP setelah semua langkah hari ini selesai",
-                color = C.muted, style = MaterialTheme.typography.labelMedium, textAlign = TextAlign.Center,
-            )
-        }
-    }
-}
-
-@Composable
-private fun FinishFlag(store: Store) {
-    val left = Content.nodes.count { !store.nodeDone(it) }
+private fun FinishFlag(store: Store, subject: Subject) {
+    val left = Content.nodes.count { it.step.subject == subject && !store.nodeDone(it) }
     Text(
-        if (left == 0) "Semua langkah selesai. TKA gelombang 2: 2 sampai 5 November 2026."
-        else "Sisa $left langkah. TKA gelombang 2: 2 sampai 5 November 2026.",
-        Modifier.padding(horizontal = 24.dp, vertical = 10.dp),
-        color = C.text, style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center,
+        if (left == 0) "Semua langkah ${subject.label} selesai." else "Sisa $left langkah ${subject.label}.",
+        Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
+        color = C.muted, style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center,
     )
 }
 
@@ -312,29 +357,30 @@ private fun StepPopover(store: Store, idx: Int, onClose: () -> Unit, onStart: ()
     val nth = Content.nodes.filter { it.step.id == step.id && !it.isQuiz }.size
     Column(
         Modifier.padding(16.dp).fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(step.subject.color)
+            .clip(RoundedCornerShape(24.dp))
+            .background(C.surface)
+            .border(1.dp, C.line, RoundedCornerShape(24.dp))
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(step.subject.icon, null, tint = Color.White.copy(alpha = 0.9f), modifier = Modifier.size(18.dp))
+            Icon(step.subject.icon, null, tint = step.subject.color, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(6.dp))
-            Text("${step.subject.label.uppercase()} · HARI ${step.day}", color = Color.White.copy(alpha = 0.85f),
+            Text("${step.subject.label} · ${chapterLabel(step)}", color = C.muted,
                 style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.ExtraBold, modifier = Modifier.weight(1f))
-            Text("✕", color = Color.White, fontSize = 20.sp, modifier = Modifier.clip(CircleShape).clickable(onClick = onClose).padding(6.dp))
+            Text("✕", color = C.muted, fontSize = 20.sp, modifier = Modifier.clip(CircleShape).clickable(onClick = onClose).padding(6.dp))
         }
         if (node.isQuiz) {
-            Text(if (step.isPractice) step.title else "Latihan: ${step.title}", color = Color.White, style = MaterialTheme.typography.headlineMedium)
+            Text(if (step.isPractice) step.title else "Latihan: ${step.title}", color = C.text, style = MaterialTheme.typography.headlineMedium)
             Text(
                 "${step.questions.size} soal" + if (done) " · skor terbaik ${store.bestScore(step.id)}/${step.questions.size}" else "",
-                color = Color.White, style = MaterialTheme.typography.labelLarge,
+                color = C.text, style = MaterialTheme.typography.labelLarge,
             )
         } else {
             val ch = chapterNo(step)
-            Text(if (ch > 0) "Bab $ch · subbab ${node.section + 1} dari $nth" else "Ringkasan · bagian ${node.section + 1} dari $nth", color = Color.White.copy(alpha = 0.9f), style = MaterialTheme.typography.labelLarge)
-            Text(step.sections[node.section].title, color = Color.White, style = MaterialTheme.typography.headlineMedium)
-            Text(step.title, color = Color.White.copy(alpha = 0.9f), style = MaterialTheme.typography.bodyMedium)
+            Text(if (ch > 0) "Bab $ch · subbab ${node.section + 1} dari $nth" else "Ringkasan · bagian ${node.section + 1} dari $nth", color = C.muted, style = MaterialTheme.typography.labelLarge)
+            Text(step.sections[node.section].title, color = C.text, style = MaterialTheme.typography.headlineMedium)
+            Text(step.title, color = C.muted, style = MaterialTheme.typography.bodyMedium)
         }
         Spacer(Modifier.height(4.dp))
         BouncyButton(
@@ -344,9 +390,7 @@ private fun StepPopover(store: Store, idx: Int, onClose: () -> Unit, onStart: ()
                 else -> "Mulai"
             },
             Modifier.fillMaxWidth().testTag("start_step"),
-            color = Color.White,
             onClick = onStart,
-            textColor = step.subject.color,
         )
     }
 }

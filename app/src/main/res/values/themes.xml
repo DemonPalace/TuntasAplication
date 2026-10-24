@@ -5,5 +5,5 @@
         <item name="android:navigationBarColor">@color/bg</item>
         <item name="android:windowLightStatusBar">true</item>
     </style>
-    <color name="bg">#FFFFFF</color>
+    <color name="bg">#F6F5F1</color>
 </resources>

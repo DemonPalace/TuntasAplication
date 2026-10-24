@@ -77,7 +77,7 @@ fun LibraryScreen(store: Store, onOpenBook: (Subject) -> Unit, onRead: (stepInde
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        Text("Perpustakaan", color = C.text, style = MaterialTheme.typography.headlineLarge)
+        Text("Buku", color = C.text, style = MaterialTheme.typography.headlineLarge)
         Text("Empat buku sesuai kisi-kisi TKA SMA 2026: tiga mapel wajib dan Fisika.", color = C.muted, style = MaterialTheme.typography.bodyMedium)
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Pill("$totalRead/$totalSub subbab dibaca", C.good)
@@ -95,8 +95,8 @@ fun LibraryScreen(store: Store, onOpenBook: (Subject) -> Unit, onRead: (stepInde
             marks.forEach { (s, at) ->
                 val step = Content.steps[at.first]
                 Row(
-                    Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(C.surface)
-                        .border(2.dp, C.line, RoundedCornerShape(12.dp))
+                    Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(C.surface)
+                        .border(1.dp, C.line, RoundedCornerShape(16.dp))
                         .clickable { onRead(at.first, at.second) }.testTag("continue_${s.name}")
                         .padding(14.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -123,7 +123,7 @@ private fun BookCover(store: Store, s: Subject, modifier: Modifier, onClick: () 
     val read = readCount(store, s)
     Box(modifier.aspectRatio(0.72f)) {
         // Pages peeking out behind the cover.
-        Box(Modifier.fillMaxSize().padding(start = 8.dp, top = 6.dp).clip(RoundedCornerShape(6.dp, 16.dp, 16.dp, 6.dp)).background(Color(0xFFF1EADB)))
+        Box(Modifier.fillMaxSize().padding(start = 8.dp, top = 6.dp).clip(RoundedCornerShape(6.dp, 16.dp, 16.dp, 6.dp)).background(C.paperEdge))
         Row(
             Modifier.fillMaxSize().padding(end = 6.dp, bottom = 6.dp)
                 .clip(RoundedCornerShape(6.dp, 16.dp, 16.dp, 6.dp))
@@ -177,12 +177,12 @@ fun BookScreen(store: Store, subject: Subject, onBack: () -> Unit, onRead: (step
             chapters.forEachIndexed { n, step ->
                 val idx = Content.steps.indexOf(step)
                 Column(
-                    Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(C.surface)
-                        .border(2.dp, C.line, RoundedCornerShape(12.dp)).padding(14.dp),
+                    Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(C.surface)
+                        .border(1.dp, C.line, RoundedCornerShape(16.dp)).padding(14.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     Row(
-                        Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).clickable { onRead(idx, 0) }.testTag("chapter_$n"),
+                        Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).clickable { onRead(idx, 0) }.testTag("chapter_$n"),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text("Bab ${n + 1}", color = subject.color, fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, fontSize = 18.sp)
@@ -194,7 +194,7 @@ fun BookScreen(store: Store, subject: Subject, onBack: () -> Unit, onRead: (step
                     step.sections.forEachIndexed { k, sec ->
                         val read = "${step.id}#$k" in store.read
                         Row(
-                            Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).clickable { onRead(idx, k) }
+                            Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).clickable { onRead(idx, k) }
                                 .testTag("sub_${idx}_$k").padding(vertical = 8.dp, horizontal = 4.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
@@ -209,7 +209,7 @@ fun BookScreen(store: Store, subject: Subject, onBack: () -> Unit, onRead: (step
                     }
                     if (step.questions.isNotEmpty()) {
                         Row(
-                            Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(subject.color.copy(alpha = 0.12f))
+                            Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(subject.color.copy(alpha = 0.12f))
                                 .clickable { onQuiz(idx) }.testTag("chapter_quiz_$n").padding(10.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {

@@ -89,7 +89,7 @@ fun AnimatedNumber(value: Int, style: androidx.compose.ui.text.TextStyle, color:
 }
 
 @Composable
-fun LinearBar(progress: Float, color: Color, modifier: Modifier = Modifier, height: Dp = 10.dp) {
+fun LinearBar(progress: Float, color: Color, modifier: Modifier = Modifier, height: Dp = 8.dp) {
     val p by animateFloatAsState(progress.coerceIn(0f, 1f), tween(800, easing = FastOutSlowInEasing), label = "bar")
     Box(modifier.fillMaxWidth().height(height).clip(RoundedCornerShape(50)).background(C.line)) {
         Box(
@@ -99,7 +99,7 @@ fun LinearBar(progress: Float, color: Color, modifier: Modifier = Modifier, heig
     }
 }
 
-/** Flat button: solid fill, 12dp corners, a darker fill while pressed. */
+/** Flat pill button: solid fill, a darker fill while pressed. */
 @Composable
 fun BouncyButton(
     text: String,
@@ -112,17 +112,17 @@ fun BouncyButton(
 ) {
     val src = remember { MutableInteractionSource() }
     val pressed by src.collectIsPressedAsState()
-    val base = when { !enabled -> C.surface2; secondary -> Color.White; else -> color }
+    val base = when { !enabled -> C.surface2; secondary -> C.surface; else -> color }
     val face = if (pressed && enabled) darken(base, 0.9f) else base
-    val label = when { !enabled -> C.faded; secondary -> C.blue; else -> textColor }
+    val label = when { !enabled -> C.faded; secondary -> C.text; else -> textColor }
     Box(
         modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(50))
             .background(face)
-            .then(if (secondary || !enabled) Modifier.border(2.dp, C.line, RoundedCornerShape(12.dp)) else Modifier)
+            .then(if (secondary) Modifier.border(1.dp, C.line, RoundedCornerShape(50)) else Modifier)
             .clickable(src, null, enabled = enabled, onClick = onClick)
-            .padding(horizontal = 18.dp, vertical = 14.dp),
+            .padding(horizontal = 20.dp, vertical = 15.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(text, color = label, style = MaterialTheme.typography.labelLarge,
@@ -140,7 +140,7 @@ fun lighten(c: Color, f: Float = 0.25f) = Color(
 fun Pill(text: String, color: Color, modifier: Modifier = Modifier) {
     Text(
         text,
-        modifier.clip(RoundedCornerShape(50)).background(color.copy(alpha = 0.18f)).padding(horizontal = 10.dp, vertical = 4.dp),
+        modifier.clip(RoundedCornerShape(50)).background(color.copy(alpha = 0.12f)).padding(horizontal = 10.dp, vertical = 4.dp),
         color = color, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold,
     )
 }
@@ -148,14 +148,23 @@ fun Pill(text: String, color: Color, modifier: Modifier = Modifier) {
 @Composable
 fun Card(modifier: Modifier = Modifier, color: Color = C.surface, content: @Composable BoxScope.() -> Unit) {
     Box(
-        modifier.clip(RoundedCornerShape(12.dp)).background(color).border(2.dp, C.line, RoundedCornerShape(12.dp)).padding(18.dp),
+        modifier.clip(RoundedCornerShape(20.dp)).background(color).border(1.dp, C.line, RoundedCornerShape(20.dp)).padding(18.dp),
         content = content,
     )
 }
 
 @Composable
 fun SectionTitle(text: String, modifier: Modifier = Modifier) {
-    Text(text.uppercase(), modifier.padding(top = 8.dp), color = C.muted, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+    Text(text, modifier.padding(top = 12.dp), color = C.text, style = MaterialTheme.typography.titleMedium)
+}
+
+/** Large left-aligned screen title used at the top of every tab. */
+@Composable
+fun ScreenTitle(title: String, subtitle: String? = null, modifier: Modifier = Modifier) {
+    androidx.compose.foundation.layout.Column(modifier.padding(top = 12.dp, bottom = 4.dp)) {
+        Text(title, color = C.text, style = MaterialTheme.typography.headlineLarge)
+        if (subtitle != null) Text(subtitle, color = C.muted, style = MaterialTheme.typography.bodyMedium)
+    }
 }
 
 @Composable

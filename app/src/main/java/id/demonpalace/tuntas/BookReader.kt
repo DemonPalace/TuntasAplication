@@ -1,5 +1,8 @@
 package id.demonpalace.tuntas
 
+import androidx.compose.ui.unit.Density
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
@@ -75,12 +78,13 @@ import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 
 /** Paper and ink for the book pages. */
-private val Paper = Color(0xFFFFFCF5)
-private val PaperEdge = Color(0xFFEDE6D6)
-private val Ink = Color(0xFF34302A)
-private val InkSoft = Color(0xFF6F675A)
+private val Paper get() = C.paper
+private val PaperEdge get() = C.paperEdge
+private val Ink get() = C.paperInk
+private val InkSoft get() = C.paperInkSoft
 
-private val bodyStyle = TextStyle(fontFamily = FontFamily.Serif, fontSize = 17.sp, lineHeight = 28.sp, color = Ink, textAlign = TextAlign.Justify)
+// A getter, so the ink follows the theme instead of freezing at first use.
+private val bodyStyle get() = TextStyle(fontFamily = FontFamily.Serif, fontSize = 17.sp, lineHeight = 28.sp, color = Ink, textAlign = TextAlign.Justify)
 
 /** What a single page of the book shows. */
 private sealed interface BookPage {
@@ -110,8 +114,28 @@ private fun pagesFor(step: Step, sections: List<Int>, withOpener: Boolean): List
  * The reading room: one sub-chapter (from the map) or a whole chapter (from the Buku tab),
  * laid out as book pages you turn sideways.
  */
+/** Font scale applied inside the reader for the "Ukuran huruf bacaan" setting. */
+val READ_SCALES = listOf(0.9f, 1f, 1.15f)
+
 @Composable
 fun BookReader(
+    store: Store,
+    step: Step,
+    startSection: Int,
+    wholeChapter: Boolean,
+    onBack: () -> Unit,
+    onFinished: () -> Unit,
+    onStartQuiz: () -> Unit,
+) {
+    // The reading-size setting scales every text inside the book, formulas included.
+    val d = LocalDensity.current
+    CompositionLocalProvider(LocalDensity provides Density(d.density, d.fontScale * READ_SCALES[store.readSize])) {
+        BookReaderPages(store, step, startSection, wholeChapter, onBack, onFinished, onStartQuiz)
+    }
+}
+
+@Composable
+private fun BookReaderPages(
     store: Store,
     step: Step,
     startSection: Int,
@@ -209,7 +233,7 @@ fun BookReader(
 private fun TurnButton(icon: androidx.compose.ui.graphics.vector.ImageVector, desc: String, enabled: Boolean, color: Color, modifier: Modifier, onClick: () -> Unit) {
     val bg by animateColorAsState(if (enabled) color else C.surface2, label = "turn")
     Box(
-        modifier.size(54.dp).clip(RoundedCornerShape(12.dp)).background(bg).clickable(enabled = enabled, onClick = onClick),
+        modifier.size(54.dp).clip(RoundedCornerShape(16.dp)).background(bg).clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) { Icon(icon, desc, tint = if (enabled) Color.White else C.faded, modifier = Modifier.size(32.dp)) }
 }
@@ -370,7 +394,7 @@ private fun WorkedPage(step: Step, section: Int, k: Int) {
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
             BouncyButton("Langkah ${shown + 1}", Modifier.weight(1f).testTag("reveal_step"), color = color) { shown++ }
             Text("Lihat semua", color = darken(color), fontWeight = FontWeight.Bold,
-                modifier = Modifier.clip(RoundedCornerShape(12.dp)).clickable { shown = ex.steps.size }.padding(10.dp).testTag("reveal_all"))
+                modifier = Modifier.clip(RoundedCornerShape(16.dp)).clickable { shown = ex.steps.size }.padding(10.dp).testTag("reveal_all"))
         }
     }
 }
@@ -381,7 +405,7 @@ private fun SummaryPage(step: Step, section: Int, understood: MutableList<String
     val color = step.subject.color
     if (sec.pitfalls.isNotEmpty()) {
         Column(
-            Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Color(0xFFFFF3E0))
+            Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(C.warnWash)
                 .border(2.dp, C.pink, RoundedCornerShape(14.dp)).padding(14.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
@@ -398,8 +422,8 @@ private fun SummaryPage(step: Step, section: Int, understood: MutableList<String
         val on = key in understood
         val bg by animateColorAsState(if (on) color.copy(alpha = 0.16f) else Color.Transparent, label = "pt")
         Row(
-            Modifier.fillMaxWidth().padding(vertical = 4.dp).clip(RoundedCornerShape(12.dp)).background(bg)
-                .border(1.5.dp, if (on) color else PaperEdge, RoundedCornerShape(12.dp))
+            Modifier.fillMaxWidth().padding(vertical = 4.dp).clip(RoundedCornerShape(16.dp)).background(bg)
+                .border(1.5.dp, if (on) color else PaperEdge, RoundedCornerShape(16.dp))
                 .clickable { if (on) understood.remove(key) else understood.add(key) }
                 .testTag("point_$key").padding(12.dp),
             verticalAlignment = Alignment.Top,
@@ -436,7 +460,7 @@ private fun EndPage(store: Store, step: Step, section: Int, wholeChapter: Boolea
             BouncyButton("Kembali ke buku", Modifier.fillMaxWidth().testTag("finish_read"), secondary = true, onClick = onFinished)
         } else {
             val already = "${step.id}#$section" in store.read
-            BouncyButton(if (already) "Selesai" else "Selesai (+10 XP)", Modifier.fillMaxWidth().testTag("finish_read"), color = color) {
+            BouncyButton("Selesai", Modifier.fillMaxWidth().testTag("finish_read"), color = color) {
                 store.markRead(step, section); onFinished()
             }
         }

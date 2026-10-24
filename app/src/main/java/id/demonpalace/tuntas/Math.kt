@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.Placeholder
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -74,7 +75,12 @@ fun MathText(
         return
     }
     val density = LocalDensity.current
-    val ink = if (color == Color.Unspecified) Color.Black else color
+    // Formulas follow the text colour, so they stay readable in dark mode.
+    val ink = when {
+        color != Color.Unspecified -> color
+        style.color != Color.Unspecified -> style.color
+        else -> C.text
+    }
     val sizePx = with(density) { (if (style.fontSize.isSpecified()) style.fontSize else 16.sp).toPx() } * 1.08f
     val built = remember(text, sizePx, ink) {
         val inline = mutableMapOf<String, InlineTextContent>()
@@ -103,7 +109,9 @@ fun MathText(
         }
         str to inline
     }
-    Text(built.first, style = style, color = color, modifier = modifier, inlineContent = built.second)
+    // Justified lines stretch the spaces but not the inline formula slots, so formulas would land on the words.
+    val safe = if (style.textAlign == TextAlign.Justify) style.copy(textAlign = TextAlign.Start) else style
+    Text(built.first, style = safe, color = color, modifier = modifier, inlineContent = built.second)
 }
 
 private fun androidx.compose.ui.unit.TextUnit.isSpecified() = this != androidx.compose.ui.unit.TextUnit.Unspecified

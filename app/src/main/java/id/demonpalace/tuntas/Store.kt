@@ -9,7 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import java.time.LocalDate
 
-/** All app state lives in one SharedPreferences file so the blocker service can read it too. */
+/** All app state lives in one SharedPreferences file. */
 class Store private constructor(private val prefs: SharedPreferences) {
 
     var done by mutableStateOf(prefs.getStringSet(K_DONE, emptySet())!!.toSet())
@@ -34,23 +34,26 @@ class Store private constructor(private val prefs: SharedPreferences) {
         private set
     var photos by mutableStateOf(prefs.getStringSet(K_PHOTOS, emptySet())!!.sorted())
         private set
-    var blocked by mutableStateOf(prefs.getStringSet(K_BLOCKED, emptySet())!!.toSet())
-        private set
-    var dailyLimitMin by mutableIntStateOf(prefs.getInt(K_LIMIT, 0))
-        private set
-    var alwaysBlock by mutableStateOf(prefs.getBoolean(K_ALWAYS, false))
-        private set
     var badges by mutableStateOf(prefs.getStringSet(K_BADGES, emptySet())!!.toSet())
         private set
     /** Bumped whenever a day-keyed counter changes, so Compose re-reads them. */
     var tick by mutableIntStateOf(0)
         private set
 
+    /** 0 = follow the system, 1 = light, 2 = dark. */
+    var themeMode by mutableIntStateOf(prefs.getInt(K_THEME, 0))
+        private set
+    /** Reading text size in the books: 0 = small, 1 = medium, 2 = large. */
+    var readSize by mutableIntStateOf(prefs.getInt(K_READ_SIZE, 1))
+        private set
+
+    fun updateThemeMode(v: Int) { themeMode = v; prefs.edit().putInt(K_THEME, v).apply() }
+    fun updateReadSize(v: Int) { readSize = v; prefs.edit().putInt(K_READ_SIZE, v).apply() }
+
     fun bestScore(stepId: String) = prefs.getInt("score_$stepId", -1)
 
     fun focusMinutes(date: LocalDate = LocalDate.now()) = prefs.getInt("focus_$date", 0)
     fun questionsAnswered(date: LocalDate = LocalDate.now()) = prefs.getInt("answered_$date", 0)
-    fun blockedHits(date: LocalDate = LocalDate.now()) = prefs.getInt("blocked_$date", 0)
 
     val level get() = xp / 100 + 1
     val levelProgress get() = (xp % 100) / 100f
@@ -63,10 +66,24 @@ class Store private constructor(private val prefs: SharedPreferences) {
 
     fun nodeDone(n: PathNode): Boolean = if (n.isQuiz) n.step.id in done else n.id in read
 
-    fun nodeUnlocked(i: Int): Boolean = i == 0 || nodeDone(Content.nodes[i - 1])
+    /** Each subject is its own path: a stop opens once the previous stop of the same subject is done. */
+    fun nodeUnlocked(i: Int): Boolean {
+        val subject = Content.nodes[i].step.subject
+        val prev = (i - 1 downTo 0).firstOrNull { Content.nodes[it].step.subject == subject } ?: return true
+        return nodeDone(Content.nodes[prev])
+    }
 
-    /** Index of the first node not finished yet, i.e. where the "MULAI" bubble sits. */
+    /** Index of the first node not finished yet, over all subjects. */
     val currentNode: Int get() = Content.nodes.indexOfFirst { !nodeDone(it) }
+
+    /** Index of the first unfinished node of [subject], or -1 when that path is done. */
+    fun currentNode(subject: Subject): Int = Content.nodes.indexOfFirst { it.step.subject == subject && !nodeDone(it) }
+
+    /** Subject shown on the map, remembered between launches. */
+    var mapSubject: Subject
+        get() = prefs.getString("map_subject", null)?.let { n -> Subject.entries.firstOrNull { it.name == n } }
+            ?: Content.nodes.getOrNull(currentNode)?.step?.subject ?: Subject.MAT
+        set(v) { prefs.edit().putString("map_subject", v.name).apply(); tick++ }
 
     fun stepRead(step: Step) = step.sections.indices.all { "${step.id}#$it" in read }
 
@@ -151,19 +168,6 @@ class Store private constructor(private val prefs: SharedPreferences) {
         checkBadges()
     }
 
-    fun chestClaimed(day: Int) = prefs.getBoolean("chest_$day", false)
-
-    /** Opens the reward chest at the end of a finished day. Returns the XP gained, 0 if not allowed. */
-    fun claimChest(day: Int): Int {
-        if (chestClaimed(day) || !dayDone(day)) return 0
-        prefs.edit().putBoolean("chest_$day", true).apply()
-        addXp(25)
-        tick++
-        return 25
-    }
-
-    fun dayDone(day: Int) = Content.nodes.filter { it.step.day == day }.all { nodeDone(it) }
-
     fun sessionsDone(date: LocalDate = LocalDate.now()) = prefs.getInt("sessions_$date", 0)
 
     /** Emergency exit: only minutes already spent count, no XP. */
@@ -183,28 +187,9 @@ class Store private constructor(private val prefs: SharedPreferences) {
         prefs.edit().putInt(K_PHASE, p).putLong(K_PHASE_END, end).apply()
     }
 
-    fun toggleBlocked(pkg: String) {
-        blocked = if (pkg in blocked) blocked - pkg else blocked + pkg
-        prefs.edit().putStringSet(K_BLOCKED, blocked).apply()
-    }
-
-    fun updateDailyLimit(min: Int) {
-        dailyLimitMin = min
-        prefs.edit().putInt(K_LIMIT, min).apply()
-    }
-
-    fun updateAlwaysBlock(on: Boolean) {
-        alwaysBlock = on
-        prefs.edit().putBoolean(K_ALWAYS, on).apply()
-    }
-
-    fun recordBlockedHit() = bump("blocked_${LocalDate.now()}", 1)
-
     fun resetAll() {
-        val keepBlocked = blocked
-        val keepLimit = dailyLimitMin
-        prefs.edit().clear().putStringSet(K_BLOCKED, keepBlocked).putInt(K_LIMIT, keepLimit)
-            .putBoolean(K_ALWAYS, alwaysBlock).apply()
+        // Settings survive a progress reset.
+        prefs.edit().clear().putInt(K_THEME, themeMode).putInt(K_READ_SIZE, readSize).apply()
         studyMin = 300; practiceMin = 60
         done = emptySet(); read = emptySet(); wrong = emptySet(); xp = 0; streak = 0; badges = emptySet()
         phase = 0; phaseEndAt = 0L; photos = emptyList(); tick++
@@ -249,10 +234,9 @@ class Store private constructor(private val prefs: SharedPreferences) {
         private const val K_STUDY_MIN = "study_min"
         private const val K_PRACTICE_MIN = "practice_min"
         private const val K_PHOTOS = "photos"
-        const val K_BLOCKED = "blocked"
-        const val K_LIMIT = "daily_limit"
         private const val K_BADGES = "badges"
-        private const val K_ALWAYS = "always_block"
+        private const val K_THEME = "theme_mode"
+        private const val K_READ_SIZE = "read_size"
 
         @Volatile private var instance: Store? = null
         fun get(ctx: Context): Store = instance ?: synchronized(this) {
@@ -264,12 +248,12 @@ class Store private constructor(private val prefs: SharedPreferences) {
 
 enum class Badge(val title: String, val desc: String, val check: (Store) -> Boolean) {
     FIRST_STEP("Langkah pertama selesai", "1 langkah di jalur selesai", { it.done.isNotEmpty() }),
-    DAY_ONE("Hari 1 selesai", "Semua langkah hari 1 selesai", { s -> s.dayDone(1) }),
+    DAY_ONE("Satu bab selesai", "Semua subbab dan kuis satu bab selesai", { s -> Content.steps.any { st -> !st.isPractice && Content.nodes.filter { it.step == st }.all { s.nodeDone(it) } } }),
     STREAK7("7 hari berturut-turut", "Belajar 7 hari tanpa putus", { it.streak >= 7 }),
     MATH("Matematika selesai", "Semua bab Matematika selesai", { s -> Content.steps.filter { it.subject == Subject.MAT }.all { it.id in s.done } }),
     PHYSICS("Fisika selesai", "Semua bab Fisika selesai", { s -> Content.steps.filter { it.subject == Subject.FIS }.all { it.id in s.done } }),
     PERFECT("Kuis 100%", "Semua soal benar di satu kuis", { s -> Content.steps.any { st -> st.questions.isNotEmpty() && s.bestScore(st.id) == st.questions.size } }),
     FOCUS("Sesi harian tuntas", "1 Sesi Harian selesai dengan ringkasan", { it.photos.isNotEmpty() }),
-    LEVEL5("Level 5", "400 XP terkumpul", { it.xp >= 400 }),
+    HALF("Separuh jalur", "Separuh dari semua langkah selesai", { s -> Content.nodes.count { s.nodeDone(it) } * 2 >= Content.nodes.size }),
     FINISH("Semua langkah selesai", "Seluruh jalur selesai", { s -> Content.steps.all { it.id in s.done } }),
 }

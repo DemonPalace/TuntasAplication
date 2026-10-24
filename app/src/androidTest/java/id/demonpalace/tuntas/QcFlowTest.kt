@@ -35,7 +35,7 @@ class QcFlowTest {
     private val store get() = Store.get(ctx)
 
     @Before fun reset() {
-        rule.runOnUiThread { store.resetAll() }
+        rule.runOnUiThread { store.resetAll(); store.updateThemeMode(1); store.updateReadSize(1) }
         rule.waitForIdle()
     }
 
@@ -70,6 +70,13 @@ class QcFlowTest {
         }
     }
 
+    /** Switches the map to the stop's subject, scrolls to it and taps it. */
+    private fun tapNode(i: Int) {
+        rule.onNodeWithTag("subject_${Content.nodes[i].step.subject.name}").performClick()
+        rule.waitForIdle()
+        rule.onNodeWithTag("node_$i").performScrollTo().performClick()
+    }
+
     /** Answers one question of any type; [right] = false picks a wrong answer. */
     private fun answer(q: Question, right: Boolean) {
         when {
@@ -94,7 +101,7 @@ class QcFlowTest {
 
     @Test fun a_readOnTheMap() {
         shot("01_map_start", 1200)
-        rule.onNodeWithTag("node_0").performClick()
+        tapNode(0)
         shot("02_map_popover")
         rule.onNodeWithTag("start_step").performClick()
         shot("03_book_opener", 900)
@@ -127,7 +134,7 @@ class QcFlowTest {
     }
 
     @Test fun b_lockedNodeShakes() {
-        rule.onNodeWithTag("node_3").performClick()
+        tapNode(3)
         shot("10_locked_shake", 100)
     }
 
@@ -135,6 +142,7 @@ class QcFlowTest {
         val qi = Content.nodes.indexOfFirst { it.isQuiz }
         unlockUpTo(qi)
         val step = Content.nodes[qi].step
+        rule.onNodeWithTag("subject_${step.subject.name}").performClick()
         rule.onNodeWithTag("node_$qi").performScrollTo()
         shot("11_map_quiz_node", 900)
         rule.onNodeWithTag("node_$qi").performClick()
@@ -161,7 +169,7 @@ class QcFlowTest {
         val step = Content.steps[si]
         val ni = Content.nodes.indexOfFirst { it.isQuiz && it.step.id == "rbig1" }
         unlockUpTo(ni)
-        rule.onNodeWithTag("node_$ni").performScrollTo().performClick()
+        tapNode(ni)
         rule.onNodeWithTag("start_step").performClick()
         var multiShot = false
         var tableShot = false
@@ -259,15 +267,8 @@ class QcFlowTest {
         assertEquals(1, store.photos.size)
     }
 
-    @Test fun i_blockScreen() {
-        rule.onNodeWithTag("tab_4").performClick()
-        shot("36_block_top", 2000)
-        rule.onNodeWithTag("limit_30").performScrollTo().performClick()
-        assertEquals(30, store.dailyLimitMin)
-    }
-
     @Test fun j_pageTurnAnimation() {
-        rule.onNodeWithTag("node_0").performClick()
+        tapNode(0)
         rule.waitUntil(5000) { rule.onAllNodesWithTag("start_step").fetchSemanticsNodes().isNotEmpty() }
         rule.onNodeWithTag("start_step").performClick()
         rule.waitUntil(5000) { rule.onAllNodesWithTag("book_pager").fetchSemanticsNodes().isNotEmpty() }
@@ -311,5 +312,71 @@ class QcFlowTest {
         shot("41_quiz_latex", 900)
         answer(step.questions.first(), right = false)
         shot("42_quiz_feedback", 700)
+    }
+
+    @Test fun m_settingsAndDarkMode() {
+        rule.onNodeWithTag("tab_2").performClick()
+        rule.onNodeWithTag("open_settings").performClick()
+        shot("50_settings_light", 700)
+        rule.onNodeWithTag("set_theme_2").performClick()
+        rule.onNodeWithTag("set_font_2").performClick()
+        shot("51_settings_dark", 700)
+        assertEquals(2, store.themeMode)
+        rule.onNodeWithTag("settings_back").performClick()
+        shot("52_progress_dark", 900)
+        rule.onNodeWithTag("tab_0").performClick()
+        shot("53_map_dark", 1200)
+        tapNode(0)
+        shot("54_popover_dark")
+        rule.onNodeWithTag("start_step").performClick()
+        rule.mainClock.advanceTimeBy(900)
+        turnPage()
+        shot("55_book_dark_large", 900)
+        rule.onNodeWithTag("back").performClick()
+        rule.onNodeWithTag("tab_1").performClick()
+        rule.onNodeWithTag("book_MAT").performClick()
+        val mat = Content.books.getValue(Subject.MAT)
+        val n = mat.indexOfFirst { st -> st.questions.firstOrNull()?.let { MATH in it.text || it.options.any { o -> MATH in o } } == true }
+        rule.onNodeWithTag("chapter_quiz_$n").performScrollTo().performClick()
+        shot("56_quiz_dark", 900)
+        answer(mat[n].questions.first(), right = true)
+        shot("57_quiz_feedback_dark", 700)
+        rule.onNodeWithTag("quiz_next").performClick()
+    }
+
+    @Test fun n_focusDark() {
+        rule.runOnUiThread { store.updateThemeMode(2) }
+        rule.onNodeWithTag("tab_3").performClick()
+        shot("58_focus_dark", 900)
+        rule.onNodeWithTag("tab_1").performClick()
+        shot("59_library_dark", 900)
+    }
+
+    @Test fun o_tutiInQuizDark() {
+        rule.runOnUiThread { store.updateThemeMode(2) }
+        val qi = Content.nodes.indexOfFirst { it.isQuiz }
+        unlockUpTo(qi)
+        val step = Content.nodes[qi].step
+        tapNode(qi)
+        rule.onNodeWithTag("start_step").performClick()
+        step.questions.forEachIndexed { i, q ->
+            answer(q, right = i != 0)
+            if (i == 0) shot("60_quiz_wrong_dark", 300)
+            if (i == 1) shot("61_quiz_correct_dark", 250)
+            rule.onNodeWithTag("quiz_next").performClick()
+        }
+        shot("62_result_dark", 1200)
+        assertTrue(displayed("mascot"))
+    }
+
+    @Test fun p_launcherIcon() {
+        val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+        device.pressHome()
+        Thread.sleep(1500)
+        shot("63_home_screen", 0)
+        // Open the app drawer, where Tuntas is listed with its icon.
+        device.swipe(device.displayWidth / 2, device.displayHeight * 4 / 5, device.displayWidth / 2, device.displayHeight / 5, 20)
+        Thread.sleep(1500)
+        shot("64_app_drawer", 0)
     }
 }
