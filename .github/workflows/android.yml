@@ -1,0 +1,102 @@
+name: Build & QC
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Unit tests + APK
+        run: ./gradlew --no-daemon testDebugUnitTest assembleDebug
+      - name: Rename APK
+        run: cp app/build/outputs/apk/debug/app-debug.apk TUNTAS.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TUNTAS-apk
+          path: TUNTAS.apk
+      - name: Publish "latest" release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Jalur TKA (versi terbaru)
+          prerelease: false
+          make_latest: true
+          files: TUNTAS.apk
+          body: |
+            Unduh **TUNTAS.apk** di bawah lalu buka di HP Android untuk memasang.
+            Build otomatis dari commit ${{ github.sha }}.
+
+  qc:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Emulator UI tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -memory 4096
+          cores: 4
+          script: |
+            adb shell settings put global window_animation_scale 1
+            adb shell settings put global hide_error_dialogs 1 || true
+            sleep 45
+            adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS || true
+            ./gradlew --no-daemon connectedDebugAndroidTest || true
+            mkdir -p qc-out && adb logcat -d -s AndroidRuntime:E TestRunner:* > qc-out/logcat.txt || true
+      - name: Collect reports
+        if: always()
+        run: |
+          mkdir -p qc-out
+          cp -r app/build/reports/androidTests qc-out/reports 2>/dev/null || true
+          cp -r app/build/outputs/androidTest-results qc-out/results 2>/dev/null || true
+          mkdir -p qc-out/screens
+          find app/build/outputs/connected_android_test_additional_output -name "*.png" -exec cp {} qc-out/screens/ \; 2>/dev/null || true
+          ls qc-out/screens | head -50
+      - name: Push screenshots to qc-screenshots branch
+        if: always()
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git checkout --orphan qc-screenshots
+          git rm -rf --cached . > /dev/null
+          find . -mindepth 1 -maxdepth 1 ! -name qc-out ! -name .git -exec rm -rf {} +
+          echo "${{ github.sha }}" > qc-out/COMMIT
+          git add qc-out
+          git commit -m "QC screenshots for ${{ github.sha }}"
+          git push -f origin qc-screenshots
+      - name: Fail if UI tests failed
+        run: |
+          ls qc-out/results/connected/debug/*.xml
+          ! grep -l "<failure" qc-out/results/connected/debug/*.xml
