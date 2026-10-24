@@ -230,7 +230,6 @@ private fun BottomBar(selected: Int, onSelect: (Int) -> Unit) {
     ) {
         tabs.forEachIndexed { i, t ->
             val on = i == selected
-            val scale by animateFloatAsState(if (on) 1.12f else 1f, spring(Spring.DampingRatioMediumBouncy), label = "tab")
             Column(
                 Modifier
                     .clip(RoundedCornerShape(16.dp))
@@ -240,15 +239,15 @@ private fun BottomBar(selected: Int, onSelect: (Int) -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Box(
-                    Modifier.scale(scale).clip(RoundedCornerShape(50))
+                    Modifier.clip(RoundedCornerShape(12.dp))
                         .background(if (on) C.blue.copy(alpha = 0.12f) else C.bg)
-                        .border(2.dp, if (on) C.blue.copy(alpha = 0.6f) else C.bg, RoundedCornerShape(50))
+                        .border(2.dp, if (on) C.blue.copy(alpha = 0.6f) else C.bg, RoundedCornerShape(12.dp))
                         .padding(horizontal = 12.dp, vertical = 4.dp),
                 ) {
                     Icon(t.icon, t.label, tint = if (on) C.blue else C.faded, modifier = Modifier.size(24.dp))
                 }
                 Spacer(Modifier.height(2.dp))
-                Text(t.label.uppercase(), color = if (on) C.blue else C.faded, style = MaterialTheme.typography.labelMedium,
+                Text(t.label, color = if (on) C.blue else C.faded, style = MaterialTheme.typography.labelMedium,
                     fontWeight = if (on) FontWeight.Bold else FontWeight.Medium)
             }
         }

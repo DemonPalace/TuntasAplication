@@ -69,10 +69,37 @@ class ContentTest {
     }
 
     @Test fun bankIsImportedAndFiguresExist() {
-        assertTrue("only ${Content.questionCount} questions", Content.questionCount >= 230)
+        assertTrue("only ${Content.questionCount} questions", Content.questionCount >= 500)
         val assets = java.io.File("src/main/assets")
         Content.allQuestions.values.mapNotNull { it.second.image }.forEach {
             assertTrue("missing figure $it", java.io.File(assets, it).exists())
+        }
+    }
+
+    @Test fun everyChapterPlanCoversItsStep() {
+        Content.planSteps.forEach { s -> assertEquals("${s.id} left out", emptyList<String>(), Chapters.unused(s)) }
+    }
+
+    @Test fun everyBookHasTenChapters() {
+        listOf(Subject.MAT, Subject.FIS, Subject.BIN, Subject.BIG).forEach { s ->
+            assertTrue("$s has ${Content.books.getValue(s).size} chapters", Content.books.getValue(s).size >= 10)
+        }
+    }
+
+    /** House style: no emoji, no em-dash, no chatbot filler in what the books and quizzes say. */
+    @Test fun textHasNoChatbotFiller() {
+        val emoji = Regex("[\\x{1F300}-\\x{1FAFF}\\x{2600}-\\x{27BF}]")
+        val banned = listOf("Mari kita", "Yuk", "Semangat", "Dalam bab ini", "pada dasarnya", "perlu diingat", "penting untuk dipahami",
+            "tidak dapat dipungkiri", "Let's", "dive in", "Mantap", "Keren")
+        val texts = Content.books.values.flatten().flatMap { st ->
+            listOf(st.title, st.kisi) + st.sections.flatMap { sec ->
+                listOf(sec.title) + sec.points + sec.explain + sec.pitfalls + sec.examples.flatMap { listOf(it.problem, it.answer) + it.steps }
+            } + st.questions.flatMap { listOf(it.text, it.explain) }
+        }
+        texts.forEach { t ->
+            assertTrue("emoji in: $t", !emoji.containsMatchIn(t))
+            assertTrue("em-dash in: $t", '\u2014' !in t)
+            banned.forEach { b -> assertTrue("'$b' in: $t", b !in t) }
         }
     }
 

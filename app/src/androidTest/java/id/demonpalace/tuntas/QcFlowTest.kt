@@ -278,4 +278,38 @@ class QcFlowTest {
         rule.mainClock.autoAdvance = true
         shot("38_page_turn_done", 800)
     }
+
+    @Test fun k_latexAndEnglishBook() {
+        rule.onNodeWithTag("tab_1").performClick()
+        rule.onNodeWithTag("book_MAT").performClick()
+        val mat = Content.books.getValue(Subject.MAT)
+        val step = mat.first { st -> st.sections.any { it.formulas.isNotEmpty() } }
+        val k = step.sections.indexOfFirst { it.formulas.isNotEmpty() }
+        rule.onNodeWithTag("sub_${Content.steps.indexOf(step)}_$k").performScrollTo().performClick()
+        rule.mainClock.advanceTimeBy(900)
+        if (k == 0) turnPage() // section 0 opens on the chapter opener
+        rule.onNodeWithTag("formula_box").performScrollTo()
+        shot("39_formula_box", 900)
+        rule.onNodeWithTag("back").performClick()
+        rule.onNodeWithTag("back").performClick()
+        rule.onNodeWithTag("book_BIG").performClick()
+        val big = Content.books.getValue(Subject.BIG).first()
+        rule.onNodeWithTag("sub_${Content.steps.indexOf(big)}_0").performScrollTo().performClick()
+        rule.mainClock.advanceTimeBy(900)
+        turnPage()
+        rule.onAllNodesWithTag("gloss").fetchSemanticsNodes().firstOrNull()?.let { rule.onAllNodesWithTag("gloss")[0].performScrollTo() }
+        shot("40_english_gloss", 900)
+    }
+
+    @Test fun l_latexQuiz() {
+        rule.onNodeWithTag("tab_1").performClick()
+        rule.onNodeWithTag("book_MAT").performClick()
+        val mat = Content.books.getValue(Subject.MAT)
+        val n = mat.indexOfFirst { st -> st.questions.firstOrNull()?.let { MATH in it.text || it.options.any { o -> MATH in o } } == true }
+        val step = mat[n]
+        rule.onNodeWithTag("chapter_quiz_$n").performScrollTo().performClick()
+        shot("41_quiz_latex", 900)
+        answer(step.questions.first(), right = false)
+        shot("42_quiz_feedback", 700)
+    }
 }

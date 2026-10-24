@@ -124,14 +124,14 @@ object LessonsExtra {
             "Soal cerita (harga barang, umur, campuran) diubah dulu menjadi tiga persamaan. Tuliskan apa arti setiap variabel supaya tidak tertukar.",
         ),
         formulas = listOf(
-            "Langkah: eliminasi 1 variabel dari 2 pasang persamaan → SPLDV → substitusi balik",
+            "Langkah: eliminasi 1 variabel dari 2 pasang persamaan, selesaikan SPLDV-nya, lalu substitusi balik",
         ),
         examples = listOf(
             ex("Selesaikan: x + y + z = 6,  x − y + z = 2,  2x + y − z = 1.",
                 "Persamaan (1) − (2): 2y = 4, jadi y = 2.",
                 "Masukkan y = 2 ke (1): x + z = 4. Masukkan ke (3): 2x + 2 − z = 1, jadi 2x − z = −1.",
                 "Jumlahkan x + z = 4 dan 2x − z = −1: 3x = 3, jadi x = 1. Maka z = 4 − 1 = 3.",
-                "Cek (2): 1 − 2 + 3 = 2 ✓. Cek (3): 2 + 2 − 3 = 1 ✓.",
+                "Cek (2): 1 − 2 + 3 = 2. Cek (3): 2 + 2 − 3 = 1.",
                 answer = "x = 1, y = 2, z = 3"),
             ex("1 pensil + 2 buku + 1 penghapus = Rp7.500; 2 pensil + 1 buku + 1 penghapus = Rp5.500; 1 pensil + 1 buku + 2 penghapus = Rp5.000. Berapa harga 1 pensil + 1 buku + 1 penghapus?",
                 "Misalkan p, b, h. (1) p + 2b + h = 7.500, (2) 2p + b + h = 5.500, (3) p + b + 2h = 5.000.",
@@ -154,10 +154,10 @@ object LessonsExtra {
             "Pertidaksamaan linear diselesaikan seperti persamaan, dengan satu aturan penting: kalau kedua ruas dikali atau dibagi bilangan NEGATIF, tanda ketidaksamaan dibalik. Alasannya, 2 < 3 tetapi −2 > −3.",
             "Pertidaksamaan dua variabel seperti x + y ≤ 4 punya daerah penyelesaian, bukan satu titik. Cara menggambarnya: gambar garis x + y = 4 lewat titik potong sumbu (0, 4) dan (4, 0), lalu uji titik (0, 0). Karena 0 + 0 ≤ 4 benar, daerah yang memuat (0, 0) adalah penyelesaiannya.",
             "Program linear mencari nilai maksimum atau minimum dari fungsi objektif (misalnya keuntungan) dengan kendala berupa sistem pertidaksamaan. Langkahnya: (1) tentukan variabel, (2) tulis kendala, (3) gambar daerah penyelesaian, (4) cari titik-titik pojoknya, (5) masukkan setiap titik pojok ke fungsi objektif.",
-            "Kenapa cukup titik pojok? Fungsi objektif linear nilainya berubah searah di sepanjang daerah, sehingga nilai terbesar dan terkecil pasti ada di ujung-ujung daerah, yaitu titik pojoknya.",
+            "Cukup titik pojok yang diuji: fungsi objektif linear nilainya berubah searah di sepanjang daerah, sehingga nilai terbesar dan terkecil pasti ada di ujung-ujung daerah, yaitu titik pojoknya.",
         ),
         formulas = listOf(
-            "Dikali/dibagi negatif → tanda dibalik",
+            "Dikali/dibagi negatif, jadi tanda dibalik",
             "Garis §ax + by = c§ memotong sumbu di §\\left(\\frac{c}{a}, 0\\right)§ dan §\\left(0, \\frac{c}{b}\\right)§",
             "Nilai optimum §f(x, y) = px + qy§ ada di titik pojok",
         ),
@@ -182,7 +182,7 @@ object LessonsExtra {
             "Hanya mengecek titik potong sumbu dan melupakan titik perpotongan dua garis.",
         ),
         points = listOf(
-            "Kali/bagi negatif → balik tanda.",
+            "Kali/bagi negatif, jadi balik tanda.",
             "Uji titik (0, 0) untuk menentukan daerah.",
             "Optimum selalu di titik pojok.",
         ),
@@ -248,12 +248,12 @@ object LessonsExtra {
             ex("Tentukan invers f(x) = (3x − 4)/5.",
                 "y = (3x − 4)/5 → 5y = 3x − 4 → 3x = 5y + 4 → x = (5y + 4)/3.",
                 "Ganti y dengan x: f⁻¹(x) = (5x + 4)/3.",
-                "Cek: f(3) = (9 − 4)/5 = 1, dan f⁻¹(1) = (5 + 4)/3 = 3 ✓.",
+                "Cek: f(3) = (9 − 4)/5 = 1, dan f⁻¹(1) = (5 + 4)/3 = 3.",
                 answer = "f⁻¹(x) = (5x + 4)/3"),
             ex("Tentukan invers f(x) = (2x + 1)/(x − 3).",
                 "a = 2, b = 1, c = 1, d = −3.",
                 "f⁻¹(x) = (−dx + b)/(cx − a) = (3x + 1)/(x − 2).",
-                "Cek: f(4) = 9/1 = 9, dan f⁻¹(9) = 28/7 = 4 ✓.",
+                "Cek: f(4) = 9/1 = 9, dan f⁻¹(9) = 28/7 = 4.",
                 answer = "f⁻¹(x) = (3x + 1)/(x − 2)"),
         ),
         pitfalls = listOf(
@@ -430,7 +430,7 @@ object LessonsExtra {
     private val luasPermukaan = Section(
         title = "Luas permukaan bangun ruang",
         explain = listOf(
-            "Luas permukaan adalah jumlah luas semua sisi bangun ruang. Cara paling mudah memahaminya adalah membayangkan jaring-jaringnya: bangun dibuka menjadi bangun datar, lalu luasnya dijumlah.",
+            "Luas permukaan adalah jumlah luas semua sisi bangun ruang. Luas itu dihitung dari jaring-jaringnya: bangun dibuka menjadi bangun datar, lalu luas tiap bagian dijumlah.",
             "Kubus punya 6 sisi persegi, jadi 6s². Balok punya 3 pasang sisi persegi panjang, jadi 2(pl + pt + lt). Prisma punya 2 alas ditambah selimut yang berupa persegi panjang dengan panjang = keliling alas.",
             "Tabung terdiri dari 2 lingkaran dan selimut. Kalau selimut dibuka, bentuknya persegi panjang dengan panjang 2πr (keliling alas) dan lebar t. Jadi L = 2πr² + 2πrt = 2πr(r + t). Kerucut terdiri dari alas lingkaran dan selimut πrs, dengan s = garis pelukis yang dicari dari Pythagoras: s² = r² + t². Bola L = 4πr².",
         ),
@@ -694,7 +694,7 @@ object LessonsExtra {
             ex("Teks tentang banjir: paragraf 1 membahas sampah yang menyumbat saluran dan berkurangnya daerah resapan; paragraf 2 membahas kerugian rumah warga dan penyakit; paragraf 3 membahas normalisasi sungai dan biopori. Kerangka yang tepat?",
                 "Paragraf 1 = penyebab, paragraf 2 = dampak, paragraf 3 = solusi.",
                 "Kerangka harus memuat ketiganya dengan urutan yang sama.",
-                answer = "Penyebab banjir → dampak banjir → upaya mengatasi banjir"),
+                answer = "Penyebab banjir, dampak banjir, lalu upaya mengatasi banjir"),
         ),
         pitfalls = listOf("Memilih kerangka yang urutannya tertukar atau melewatkan satu paragraf."),
         points = listOf(
@@ -754,14 +754,14 @@ object LessonsExtra {
         ),
         examples = listOf(
             ex("Kalimat manakah yang memakai kata baku? (a) Hasil analisa itu valid. (b) Kwalitas produknya meningkat. (c) Ia membeli obat di apotek.",
-                "Analisa → yang baku analisis.",
-                "Kwalitas → yang baku kualitas.",
+                "Yang baku analisis, bukan analisa.",
+                "Yang baku kualitas, bukan kwalitas.",
                 "Apotek sudah baku.",
                 answer = "(c)"),
         ),
         pitfalls = listOf("Mengira bentuk yang sering dipakai sehari-hari (analisa, apotik) pasti baku."),
         points = listOf(
-            "-tion → -si, -ty → -tas, ph → f.",
+            "-tion menjadi -si, -ty menjadi -tas, ph menjadi f.",
             "Baku: analisis, kualitas, apotek, sistem.",
             "Istilah teknis menandakan bidang teks.",
         ),
@@ -796,8 +796,8 @@ object LessonsExtra {
         ),
         examples = listOf(
             ex("Raka: \"Aku sudah bilang, aku tidak mau ikut lomba!\" (membanting buku)  Ibu: (menghela napas) \"Ibu hanya ingin kamu mencoba, Nak.\" Bagaimana watak dan konfliknya?",
-                "Raka berbicara keras dan membanting buku → emosional, keras kepala.",
-                "Ibu menghela napas dan berbicara lembut → sabar.",
+                "Raka berbicara keras dan membanting buku, jadi emosional, keras kepala.",
+                "Ibu menghela napas dan berbicara lembut, jadi sabar.",
                 "Pertentangan keinginan keduanya adalah konflik antartokoh.",
                 answer = "Raka emosional, ibu sabar; konflik antartokoh"),
         ),
@@ -848,7 +848,7 @@ object LessonsExtra {
         ),
         pitfalls = listOf("Memakai koma sebelum \"karena\" atau \"meskipun\" yang berada di belakang induk kalimat."),
         points = listOf(
-            "Anak kalimat di depan → pakai koma.",
+            "Anak kalimat di depan, jadi pakai koma.",
             "Namun = pertentangan; oleh karena itu = sebab-akibat.",
         ),
     )
@@ -1045,8 +1045,8 @@ object LessonsExtra {
         examples = listOf(
             ex("Suhu gas dinaikkan dari 27°C menjadi 927°C. Berapa kali kecepatan efektif dan energi kinetik partikelnya berubah?",
                 "T₁ = 300 K dan T₂ = 1.200 K, jadi suhu mutlak naik 4 kali.",
-                "Ek ∝ T → naik 4 kali.",
-                "v ∝ √T → naik √4 = 2 kali.",
+                "Ek ∝ T, jadi naik 4 kali.",
+                "v ∝ √T, jadi naik √4 = 2 kali.",
                 answer = "v naik 2 kali, Ek naik 4 kali"),
             ex("2 mol gas ideal bersuhu 300 K berada dalam wadah 0,05 m³. Berapa tekanannya?",
                 "P = nRT/V = 2 × 8,31 × 300 / 0,05.",
@@ -1109,7 +1109,7 @@ object LessonsExtra {
         examples = listOf(
             ex("Baterai 12 V dengan hambatan dalam 1 Ω dihubungkan ke resistor 5 Ω. Berapa arus dan tegangan jepitnya?",
                 "I = 12/(5 + 1) = 2 A.",
-                "V = 12 − 2 × 1 = 10 V (cek: I·R = 2 × 5 = 10 V ✓).",
+                "V = 12 − 2 × 1 = 10 V (cek: I·R = 2 × 5 = 10 V).",
                 answer = "2 A dan 10 V"),
         ),
         pitfalls = listOf("Lupa menambahkan hambatan dalam ke hambatan total."),

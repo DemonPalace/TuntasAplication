@@ -2,12 +2,12 @@ package id.demonpalace.tuntas
 
 import androidx.compose.ui.graphics.Color
 
-enum class Subject(val label: String, val color: Color, val emoji: String) {
-    MAT("Matematika", Color(0xFF1CB0F6), "📐"),
-    FIS("Fisika", Color(0xFFFF9600), "⚡"),
-    BIN("B. Indonesia", Color(0xFFFF4B91), "📖"),
-    BIG("B. Inggris", Color(0xFF58CC02), "🌏"),
-    MIX("Tryout & Review", Color(0xFFCE82FF), "🎯"),
+enum class Subject(val label: String, val color: Color) {
+    MAT("Matematika", Color(0xFF1CB0F6)),
+    FIS("Fisika", Color(0xFFFF9600)),
+    BIN("B. Indonesia", Color(0xFFFF4B91)),
+    BIG("B. Inggris", Color(0xFF58CC02)),
+    MIX("Tryout & Review", Color(0xFFCE82FF)),
 }
 
 /** A worked example in a lesson: the problem, the solution steps, and the final answer. */
@@ -122,6 +122,15 @@ object Content {
         Source("Contoh soal TKA SMA 2026 (Blog ITERA)",
             "https://blog.itera.ac.id/?p=1518",
             "Model soal diskon bertingkat, nilai minimum fungsi, ide pokok, 'despite', energi kinetik."),
+        Source("10 contoh soal TKA SMA Matematika (detikEdu)",
+            "https://www.detik.com/edu/sekolah/d-8159201/10-contoh-soal-tka-sma-matematika-lengkap-dengan-jawaban-dan-pembahasan",
+            "Acuan tingkat kesulitan dan format soal bab Matematika."),
+        Source("15 contoh soal TKA B. Inggris SMA (CNN Indonesia)",
+            "https://www.cnnindonesia.com/edukasi/20251003103229-569-1280465/15-contoh-soal-tka-bahasa-inggris-sma-2025-dan-kunci-jawabannya",
+            "Acuan jenis teks dan tipe pertanyaan bab B. Inggris."),
+        Source("Kisi-kisi TKA SMA 2026 dan 25 contoh soal (Kompas.com)",
+            "https://www.kompas.com/skola/read/2026/08/19/102933969/kisi-kisi-tka-sma-2026-jadwal-resmi-materi-dan-25-contoh-soal-untuk",
+            "Acuan format soal B. Indonesia dan Matematika."),
         Source("Laman resmi TKA Kemendikdasmen", "https://tka.kemendikdasmen.go.id", "Cek pengumuman terbaru di sini."),
     )
 
@@ -157,7 +166,7 @@ object Content {
                     "g(2) = 5, lalu f(5) = 10 − 3 = 7."),
                 Question("m3", "Pekerjaan selesai dalam 12 hari oleh 6 pekerja. Jika dikerjakan 9 pekerja, pekerjaan selesai dalam...",
                     listOf("6 hari", "8 hari", "9 hari", "10 hari", "18 hari"), 1,
-                    "Berbalik nilai: 6 × 12 = 9 × n → n = 8 hari."),
+                    "Berbalik nilai: 6 × 12 = 9 × n, jadi n = 8 hari."),
                 Question("m4", "Nilai ²log 8 + ³log 9 adalah...",
                     listOf("4", "5", "6", "9", "17"), 1,
                     "²log 8 = 3 (2³ = 8) dan ³log 9 = 2 (3² = 9). Jumlahnya 5."),
@@ -181,7 +190,7 @@ object Content {
                 Section("Gerak lurus", listOf(
                     "GLB: s = v·t.",
                     "GLBB: v = v₀ + at,  s = v₀t + ½at²,  v² = v₀² + 2as.",
-                    "km/jam ÷ 3,6 = m/s. Direm → a negatif. Lempar ke atas: t puncak = v₀/g.",
+                    "km/jam ÷ 3,6 = m/s. Direm, jadi a negatif. Lempar ke atas: t puncak = v₀/g.",
                 )),
                 Section("Gerak parabola & melingkar", listOf(
                     "vₓ = v₀ cos θ (tetap), vᵧ = v₀ sin θ − gt.",
@@ -246,7 +255,7 @@ object Content {
                     "Keterbatasan sumber energi fosil mendorong banyak negara mulai beralih pada pengembangan energi terbarukan seperti surya, angin, dan air. Transisi ini tidak hanya bertujuan menjaga ketersediaan energi jangka panjang, tetapi juga menekan dampak perubahan iklim."),
                 Question("bi4", "Kata hubung yang tepat untuk melengkapi kalimat \"Hujan turun sangat deras sejak pagi, ... pasar tetap ramai pembeli.\" adalah...",
                     listOf("sehingga", "karena", "namun", "lalu", "serta"), 2,
-                    "Isi kedua bagian bertentangan (hujan deras vs tetap ramai) → konjungsi pertentangan \"namun\"."),
+                    "Isi kedua bagian bertentangan (hujan deras vs tetap ramai), jadi konjungsi pertentangan \"namun\"."),
                 Question("bi5", "Kalimat berikut yang merupakan fakta adalah...",
                     listOf("Indonesia adalah negara paling indah di dunia.", "Indonesia memiliki lebih dari 17.000 pulau.", "Sebaiknya semua orang berlibur ke Bali.", "Makanan Padang pasti disukai semua orang.", "Mungkin tahun depan harga beras turun."), 1,
                     "Jumlah pulau bisa dibuktikan dengan data. Yang lain memakai penilaian."),
@@ -270,7 +279,7 @@ object Content {
             listOf(
                 Question("g1", "What is the purpose of the text?",
                     listOf("To describe Parangtritis Beach", "To retell the writer's past experience", "To persuade readers to visit the beach", "To explain how to build sandcastles", "To entertain with a fable"), 1,
-                    "Past tense dan urutan kejadian (left, arrived, swam) → recount, tujuannya menceritakan kembali pengalaman.", PASSAGE_RECOUNT),
+                    "Past tense dan urutan kejadian (left, arrived, swam), jadi recount, tujuannya menceritakan kembali pengalaman.", PASSAGE_RECOUNT),
                 Question("g2", "When did the family arrive at the beach?",
                     listOf("At 6 a.m.", "At 8 a.m.", "At noon", "In the afternoon", "At night"), 1,
                     "\"We left home at 6 a.m. and arrived at 8 a.m.\" Jebakan: 6 a.m. adalah waktu berangkat.", PASSAGE_RECOUNT),
@@ -282,7 +291,7 @@ object Content {
                     "Kata benda tunggal sebelumnya yang cocok adalah Milo, kucing si penulis.", PASSAGE_DESC),
                 Question("g5", "What moral value can we learn from the story?",
                     listOf("Always travel far away", "Respect and love your parents", "Money brings happiness", "Never pray to God", "Ships are dangerous"), 1,
-                    "Malin dihukum karena durhaka pada ibunya → hormati orang tua.",
+                    "Malin dihukum karena durhaka pada ibunya, jadi hormati orang tua.",
                     "Malin Kundang became a rich merchant after years of sailing. When his ship landed in his hometown, his old mother ran to hug him. Ashamed of her poor clothes, Malin said she was not his mother. Heartbroken, she prayed, and a storm turned Malin into stone."),
                 Question("g6", "The word \"spacious\" is closest in meaning to...",
                     listOf("noisy", "roomy", "old", "dark", "expensive"), 1,
@@ -306,11 +315,11 @@ object Content {
                     "Ek sebanding v²: kecepatan 2× → Ek 4×.",
                 )),
                 Section("Momentum & impuls", listOf(
-                    "p = mv. Impuls I = F·Δt = Δp. Berbalik arah → tanda kecepatan berlawanan.",
+                    "p = mv. Impuls I = F·Δt = Δp. Berbalik arah, jadi tanda kecepatan berlawanan.",
                     "Kekekalan: m₁v₁ + m₂v₂ = m₁v₁' + m₂v₂'. Menempel: (m₁ + m₂)v'.",
                 )),
                 Section("Dinamika rotasi", listOf(
-                    "Torsi τ = F·r·sin θ (gaya tegak lurus lengan → τ = F·r).",
+                    "Torsi τ = F·r·sin θ (gaya tegak lurus lengan, jadi τ = F·r).",
                     "Momen inersia partikel I = mr². Hukum II rotasi: τ = I·α.",
                 )),
             ),
@@ -416,15 +425,15 @@ object Content {
             listOf(
                 Section("Fluida statis", listOf(
                     "Tekanan hidrostatis Pₕ = ρ·g·h (h diukur dari permukaan). Air: ρ = 1000 kg/m³.",
-                    "Pascal: F₁/A₁ = F₂/A₂. Dongkrak hidrolik: penampang besar → gaya besar.",
+                    "Pascal: F₁/A₁ = F₂/A₂. Dongkrak hidrolik: penampang besar, jadi gaya besar.",
                     "Archimedes: gaya apung Fₐ = ρ_fluida · g · V_tercelup.",
                     "Terapung: ρ benda < ρ fluida. Melayang: sama. Tenggelam: lebih besar.",
                 )),
                 Section("Fluida dinamis", listOf(
-                    "Kontinuitas: A₁v₁ = A₂v₂. Pipa menyempit → aliran makin cepat.",
+                    "Kontinuitas: A₁v₁ = A₂v₂. Pipa menyempit, jadi aliran makin cepat.",
                     "Debit Q = A·v = V/t.",
                     "Bernoulli: di tempat aliran lebih cepat, tekanan lebih kecil.",
-                    "Contoh: sayap pesawat (udara atas lebih cepat → tekanan atas kecil → gaya angkat), penyemprot parfum/obat nyamuk.",
+                    "Contoh: sayap pesawat (udara atas lebih cepat, jadi tekanan atas kecil, jadi gaya angkat), penyemprot parfum/obat nyamuk.",
                 )),
             ),
             listOf(
@@ -435,10 +444,10 @@ object Content {
                 Question("fl3", "Benda bervolume 0,002 m³ tercelup seluruhnya dalam air (ρ = 1000 kg/m³, g = 10 m/s²). Gaya apungnya adalah...",
                     listOf("0,2 N", "2 N", "20 N", "200 N", "2.000 N"), 2, "Fₐ = 1000 × 10 × 0,002 = 20 N."),
                 Question("fl4", "Air mengalir dari pipa berpenampang 4 cm² dengan kecepatan 2 m/s ke pipa berpenampang 1 cm². Kecepatan di pipa kecil adalah...",
-                    listOf("0,5 m/s", "2 m/s", "4 m/s", "8 m/s", "16 m/s"), 3, "4 × 2 = 1 × v → v = 8 m/s."),
+                    listOf("0,5 m/s", "2 m/s", "4 m/s", "8 m/s", "16 m/s"), 3, "4 × 2 = 1 × v, jadi v = 8 m/s."),
                 Question("fl5", "Saat bola karet penyemprot parfum ditekan, udara mengalir cepat melewati ujung atas pipa kecil yang tercelup parfum. Parfum naik dan menyembur karena...",
                     listOf("tekanan udara di atas pipa menjadi lebih kecil daripada tekanan pada permukaan parfum", "tekanan udara di atas pipa menjadi lebih besar", "massa jenis parfum bertambah", "gaya apung parfum hilang", "suhu parfum naik"), 0,
-                    "Prinsip Bernoulli: aliran cepat → tekanan rendah, sehingga tekanan di permukaan parfum mendorongnya naik. (Model soal Pusmendik.)"),
+                    "Prinsip Bernoulli: aliran cepat, jadi tekanan rendah, sehingga tekanan di permukaan parfum mendorongnya naik. (Model soal Pusmendik.)"),
             ),
         ),
         // ================= HARI 5 · Rab 28 Okt =================
@@ -505,7 +514,7 @@ object Content {
                 )),
                 Section("Analytical exposition", listOf(
                     "Tujuan: meyakinkan pembaca bahwa suatu pendapat benar (persuade).",
-                    "Struktur: thesis (pendapat) → arguments (First, Second) → reiteration (Therefore, In conclusion).",
+                    "Struktur: thesis (pendapat), arguments (First, Second), lalu reiteration (Therefore, In conclusion).",
                     "Soal favorit: tujuan penulis, pendapat penulis, fungsi paragraf terakhir.",
                 )),
                 Section("Kata sambung penting", listOf(
@@ -519,17 +528,17 @@ object Content {
                     "Ada thesis (should be allowed), dua argumen, dan reiteration → analytical exposition, tujuannya membujuk.", PASSAGE_EXPO),
                 Question("e2", "The last sentence of the text functions as the...",
                     listOf("thesis", "first argument", "reiteration", "orientation", "complication"), 2,
-                    "\"Therefore...\" mengulang pendapat penulis di akhir → reiteration.", PASSAGE_EXPO),
+                    "\"Therefore...\" mengulang pendapat penulis di akhir, jadi reiteration.", PASSAGE_EXPO),
                 Question("e3", "\"Despite the heavy rain, the farmers continued harvesting the rice before the flood arrived.\" The word \"despite\" indicates...",
                     listOf("cause and effect", "time sequence", "contrast", "addition", "comparison"), 2,
-                    "Hujan deras tapi tetap memanen → pertentangan."),
+                    "Hujan deras tapi tetap memanen, jadi pertentangan."),
                 Question("e4", "The purpose of the text is to...",
                     listOf("tell a funny story", "describe noodles", "explain how to cook noodles", "persuade people to eat noodles", "report news about food"), 2,
-                    "First, Then, Finally → teks procedure.",
+                    "First, Then, Finally, jadi teks procedure.",
                     "First, boil some water. Then, add the noodles and cook them for three minutes. Finally, add the seasoning and stir well."),
                 Question("e5", "What is the purpose of the text?",
                     listOf("To entertain readers", "To describe a bottle", "To persuade readers to buy the product", "To explain how to make a bottle", "To report news"), 2,
-                    "Kalimat ajakan \"Buy...today!\" → membujuk.",
+                    "Kalimat ajakan \"Buy...today!\", jadi membujuk.",
                     "Buy EcoBottle today! It keeps your drink cold for 24 hours and helps reduce plastic waste."),
             ),
         ),
@@ -542,20 +551,20 @@ object Content {
                 )),
                 Section("Bunyi", listOf(
                     "Intensitas I = P/(4πr²). Jarak 2× → intensitas ¼.",
-                    "Efek Doppler: sumber dan pendengar saling mendekat → frekuensi terdengar lebih tinggi; saling menjauh → lebih rendah.",
+                    "Efek Doppler: sumber dan pendengar saling mendekat, jadi frekuensi terdengar lebih tinggi; saling menjauh, jadi lebih rendah.",
                     "fₚ = (v ± vₚ)/(v ∓ vₛ) · fₛ (tanda atas saat mendekat).",
                 )),
                 Section("Cahaya: cermin & lensa", listOf(
                     "1/f = 1/s + 1/s'. Cermin/lensa cekung-cembung: f = R/2.",
                     "Cermin cekung & lensa cembung: f positif. Cermin cembung & lensa cekung: f negatif.",
-                    "s' positif → bayangan nyata. Perbesaran M = |s'/s|.",
+                    "s' positif, jadi bayangan nyata. Perbesaran M = |s'/s|.",
                     "Kekuatan lensa P = 1/f (f dalam meter) atau 100/f (f dalam cm), satuan dioptri.",
                 )),
             ),
             listOf(
                 Question("w1", "Pengendara motor dan ambulans yang membunyikan sirine sama-sama bergerak. Pengendara mendengar frekuensi sirine LEBIH TINGGI dari aslinya ketika...",
                     listOf("keduanya saling menjauh", "keduanya saling mendekat", "motor menjauh dengan kecepatan sama dengan ambulans yang mengejar", "keduanya diam", "ambulans menjauh dari motor yang diam"), 1,
-                    "Efek Doppler: saling mendekat → frekuensi terdengar naik. (Model soal Pusmendik.)"),
+                    "Efek Doppler: saling mendekat, jadi frekuensi terdengar naik. (Model soal Pusmendik.)"),
                 Question("w2", "Gelombang memiliki frekuensi 50 Hz dan panjang gelombang 2 m. Cepat rambatnya adalah...",
                     listOf("25 m/s", "52 m/s", "100 m/s", "200 m/s", "0,04 m/s"), 2, "v = 2 × 50 = 100 m/s."),
                 Question("w3", "Terbentuk 20 gelombang dalam 4 sekon. Periode gelombangnya adalah...",
@@ -575,7 +584,7 @@ object Content {
             listOf(
                 Section("Kalor", listOf(
                     "Q = m·c·ΔT (kenaikan suhu). Q = m·L (perubahan wujud).",
-                    "Asas Black: kalor lepas = kalor terima. Dua air bermassa sama → suhu akhir = rata-rata.",
+                    "Asas Black: kalor lepas = kalor terima. Dua air bermassa sama, jadi suhu akhir = rata-rata.",
                     "Perpindahan: konduksi (zat padat), konveksi (aliran fluida), radiasi (tanpa medium).",
                 )),
                 Section("Pemanasan global", listOf(
@@ -615,7 +624,7 @@ object Content {
                 Section("Listrik statis", listOf(
                     "Coulomb: F = k·q₁·q₂/r², k = 9 × 10⁹ N·m²/C². Jarak 2× → gaya ¼.",
                     "Medan listrik E = F/q = k·q/r². Di antara dua pelat sejajar: E = V/d.",
-                    "Gaya pada muatan di antara pelat: F = q·E = q·V/d. Jarak pelat makin kecil → gaya makin besar.",
+                    "Gaya pada muatan di antara pelat: F = q·E = q·V/d. Jarak pelat makin kecil, jadi gaya makin besar.",
                     "1 μC = 10⁻⁶ C.",
                 )),
                 Section("Rangkaian arus searah", listOf(
@@ -636,7 +645,7 @@ object Content {
                     "E = 200/0,002 = 10⁵ V/m. F = 10⁻⁷ × 10⁵ = 0,01 N. (Model soal Pusmendik.)"),
                 Question("l4", "Pada soal mesin fotokopi tadi, jika jarak pelat dikurangi menjadi 1,5 mm (tegangan tetap), gaya pada partikel menjadi...",
                     listOf("lebih kecil, sekitar 0,0075 N", "tetap 0,01 N", "lebih besar, sekitar 0,013 N", "nol", "dua kali, 0,02 N"), 2,
-                    "F = qV/d. d mengecil → F membesar: 10⁻⁷ × 200/0,0015 ≈ 0,0133 N."),
+                    "F = qV/d. d mengecil, jadi F membesar: 10⁻⁷ × 200/0,0015 ≈ 0,0133 N."),
                 Question("l5", "Resistor 3 Ω dan 6 Ω dipasang paralel, lalu diseri dengan resistor 2 Ω dan baterai 12 V. Pernyataan yang SALAH adalah...",
                     listOf("Hambatan total rangkaian 4 Ω", "Arus total 3 A", "Tegangan pada resistor 2 Ω adalah 6 V", "Arus pada resistor 3 Ω sama dengan arus pada resistor 6 Ω"), 3,
                     "Paralel = 2 Ω, total 4 Ω, I = 3 A. Arus di 3 Ω = 2 A, di 6 Ω = 1 A."),
@@ -650,7 +659,7 @@ object Content {
             listOf(Section("Aturan tryout", listOf(
                 "Tutup catatan. Anggap ini ujian sungguhan.",
                 "Macet lebih dari 2 menit? Pilih jawaban terbaik, lanjut, catat nomornya.",
-                "Setelah selesai, buka Progres → Ulang soal salah.",
+                "Setelah selesai, buka Progres, bagian Ulang soal salah.",
             ))),
             listOf(
                 Question("tm1", "Harga sepatu naik 25% sehingga menjadi Rp50.000. Harga sebelum naik adalah...",
@@ -672,7 +681,7 @@ object Content {
         Step("try2", 7, "Jum, 30 Okt", Subject.FIS, "Tryout Fisika",
             "Campuran 6 muatan Fisika. Tulis besaran yang diketahui dan samakan satuan dulu.",
             listOf(Section("Aturan tryout", listOf(
-                "Ubah satuan: km/jam → m/s, cm → m, L → m³, °C → K, menit → s.",
+                "Ubah satuan: km/jam ke m/s, cm ke m, L ke m³, °C ke K, menit ke s.",
                 "g = 10 m/s² kecuali disebut lain.",
             ))),
             listOf(
@@ -680,7 +689,7 @@ object Content {
                     listOf("1 s", "2 s", "3 s", "6 s", "30 s"), 2, "t = 30/10 = 3 s."),
                 Question("tf2", "Beban diletakkan di atas meja putar yang berputar dengan kecepatan sudut 4 rad/s. Koefisien gesek statis 0,48 (g = 10 m/s²). Jarak terjauh beban dari pusat agar tidak terlempar adalah...",
                     listOf("8 cm", "16 cm", "24 cm", "30 cm", "40 cm"), 3,
-                    "Gesek statis = gaya sentripetal: μmg = mω²r → r = μg/ω² = 4,8/16 = 0,3 m. (Model soal Pusmendik.)"),
+                    "Gesek statis = gaya sentripetal: μmg = mω²r, jadi r = μg/ω² = 4,8/16 = 0,3 m. (Model soal Pusmendik.)"),
                 Question("tf3", "Benda 2 kg yang diam diberi gaya tetap 10 N selama 3 s. Kecepatan akhirnya adalah...",
                     listOf("5 m/s", "6 m/s", "10 m/s", "15 m/s", "30 m/s"), 3, "a = 5 m/s², v = 15 m/s."),
                 Question("tf4", "Pegas dengan konstanta 200 N/m bertambah panjang 10 cm. Gaya tariknya adalah...",
@@ -714,7 +723,7 @@ object Content {
                     "Kalimat kedua menyebutnya langsung.", PASSAGE_CORAL),
                 Question("tb5", "The word \"yet\" in the first sentence shows...",
                     listOf("a cause", "an example", "a contrast", "a time order", "a conclusion"), 2,
-                    "Kecil (<1%) tapi mendukung banyak spesies → pertentangan.", PASSAGE_CORAL),
+                    "Kecil (<1%) tapi mendukung banyak spesies, jadi pertentangan.", PASSAGE_CORAL),
                 Question("tb6", "Pernyataan yang sesuai dengan isi teks adalah...",
                     listOf("Taman kota membuat warga malas berolahraga.", "Taman kota memberi dampak baik bagi kesehatan dan ekonomi warga.", "Pedagang kecil dilarang berjualan di taman.", "Taman kota hanya ramai pada malam hari.", "Warga menolak pembangunan taman kota."), 1,
                     "Warga lebih sering olahraga (kesehatan) dan pedagang mulai berjualan (ekonomi).",
@@ -726,14 +735,14 @@ object Content {
         Step("rev1", 8, "Sab, 31 Okt", Subject.MIX, "Ulang Soal yang Salah",
             "Kerjakan ulang semua soal yang pernah salah sampai bersih.",
             listOf(Section("Cara mengulang", listOf(
-                "Buka Progres → Ulang soal salah. Soal yang dijawab benar akan hilang dari daftar.",
+                "Buka Progres, bagian Ulang soal salah. Soal yang dijawab benar akan hilang dari daftar.",
                 "Tulis di buku catatan kesalahan: soalnya, kenapa salah, cara yang benar.",
                 "Target: daftar soal salah kosong sebelum 1 November.",
             ))),
             emptyList(), isReview = true,
         ),
         // ================= HARI 9 · Min 1 Nov =================
-        Step("rev2", 9, "Min, 1 Nov", Subject.MIX, "Rumus Inti & Tips Hari-H",
+        Step("rev2", 9, "Min, 1 Nov", Subject.MIX, "Rumus Inti & Strategi Hari-H",
             "Ringkasan akhir sebelum TKA gelombang 2 (2–5 November 2026).",
             listOf(
                 Section("Rumus inti Matematika", listOf(
@@ -750,7 +759,7 @@ object Content {
                     "Q = mcΔT, P₁V₁ = P₂V₂, ΔU = Q − W, η = 1 − Tr/Tt.",
                     "F = kq₁q₂/r², E = V/d, V = IR, P = VI.",
                 )),
-                Section("Tips hari-H", listOf(
+                Section("Strategi mengerjakan", listOf(
                     "Baca pertanyaan dulu, baru teksnya.",
                     "Pilihan ganda kompleks: nilai tiap pernyataan satu per satu.",
                     "Lewati soal yang macet lebih dari 2 menit, kembali di akhir.",

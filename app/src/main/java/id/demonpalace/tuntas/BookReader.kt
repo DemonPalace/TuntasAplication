@@ -209,25 +209,23 @@ fun BookReader(
 private fun TurnButton(icon: androidx.compose.ui.graphics.vector.ImageVector, desc: String, enabled: Boolean, color: Color, modifier: Modifier, onClick: () -> Unit) {
     val bg by animateColorAsState(if (enabled) color else C.surface2, label = "turn")
     Box(
-        modifier.size(54.dp).clip(RoundedCornerShape(16.dp)).background(darken(bg)).padding(bottom = 4.dp)
-            .clip(RoundedCornerShape(16.dp)).background(bg).clickable(enabled = enabled, onClick = onClick),
+        modifier.size(54.dp).clip(RoundedCornerShape(12.dp)).background(bg).clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) { Icon(icon, desc, tint = if (enabled) Color.White else C.faded, modifier = Modifier.size(32.dp)) }
 }
 
-/** The physical page: cream paper, spine shadow, page number at the foot. */
+/** The physical page: cream paper, a spine line in the subject color, page number at the foot. */
 @Composable
 private fun PaperPage(number: Int, total: Int, color: Color, content: @Composable () -> Unit) {
     Box(
         Modifier.fillMaxSize().clip(RoundedCornerShape(topEnd = 18.dp, bottomEnd = 18.dp, topStart = 4.dp, bottomStart = 4.dp))
             .background(Paper).border(1.dp, PaperEdge, RoundedCornerShape(topEnd = 18.dp, bottomEnd = 18.dp, topStart = 4.dp, bottomStart = 4.dp)),
     ) {
-        Box(Modifier.fillMaxHeight().width(16.dp).background(Brush.horizontalGradient(listOf(Color(0x22000000), Color.Transparent))))
         Box(Modifier.fillMaxHeight().width(3.dp).background(color.copy(alpha = 0.55f)))
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 26.dp, end = 20.dp, top = 20.dp, bottom = 12.dp)) {
             content()
             Spacer(Modifier.height(24.dp))
-            Text("— $number —", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 13.sp,
+            Text("$number / $total", color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 13.sp,
                 textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
         }
     }
@@ -253,14 +251,13 @@ private fun emphasize(text: String, color: Color, dropCap: Boolean = false): Ann
 @Composable
 private fun OpenerPage(step: Step, chapter: Int) {
     val color = step.subject.color
-    val bob = rememberBob(5f)
     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         Spacer(Modifier.height(12.dp))
         Text(if (chapter > 0) "BAB $chapter" else step.subject.label.uppercase(), color = color,
             fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, fontSize = 20.sp, letterSpacing = 4.sp)
         Spacer(Modifier.height(14.dp))
         Box(
-            Modifier.graphicsLayer { translationY = bob }.size(96.dp).clip(CircleShape).background(color.copy(alpha = 0.15f))
+            Modifier.size(96.dp).clip(CircleShape).background(color.copy(alpha = 0.15f))
                 .border(3.dp, color, CircleShape),
             contentAlignment = Alignment.Center,
         ) { Icon(step.subject.icon, null, tint = color, modifier = Modifier.size(52.dp)) }
@@ -356,7 +353,7 @@ private fun WorkedPage(step: Step, section: Int, k: Int) {
             }
         }
     }
-    AnimatedVisibility(shown >= ex.steps.size, enter = scaleIn(spring(Spring.DampingRatioMediumBouncy)) + fadeIn()) {
+    AnimatedVisibility(shown >= ex.steps.size, enter = fadeIn() + expandVertically()) {
         Column(
             Modifier.padding(top = 10.dp).fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(C.goodWash)
                 .border(2.dp, C.good, RoundedCornerShape(14.dp)).padding(14.dp).testTag("example_answer"),
@@ -367,11 +364,11 @@ private fun WorkedPage(step: Step, section: Int, k: Int) {
     }
     if (shown < ex.steps.size) {
         Spacer(Modifier.height(10.dp))
-        Text("Coba kerjakan dulu di kertas, lalu buka langkahnya satu per satu.", color = InkSoft, fontFamily = FontFamily.Serif,
+        Text("Kerjakan di kertas dulu, lalu buka langkah satu per satu.", color = InkSoft, fontFamily = FontFamily.Serif,
             fontStyle = FontStyle.Italic, fontSize = 14.sp)
         Spacer(Modifier.height(10.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
-            BouncyButton("Langkah ${shown + 1} ▸", Modifier.weight(1f).testTag("reveal_step"), color = color) { shown++ }
+            BouncyButton("Langkah ${shown + 1}", Modifier.weight(1f).testTag("reveal_step"), color = color) { shown++ }
             Text("Lihat semua", color = darken(color), fontWeight = FontWeight.Bold,
                 modifier = Modifier.clip(RoundedCornerShape(12.dp)).clickable { shown = ex.steps.size }.padding(10.dp).testTag("reveal_all"))
         }
@@ -388,7 +385,7 @@ private fun SummaryPage(step: Step, section: Int, understood: MutableList<String
                 .border(2.dp, C.pink, RoundedCornerShape(14.dp)).padding(14.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text("⚠  AWAS JEBAKAN", color = darken(C.pink), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Black)
+            Text("Jebakan", color = darken(C.pink), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Black)
             sec.pitfalls.forEach { MathText("• $it", bodyStyle.copy(fontSize = 16.sp, lineHeight = 25.sp, textAlign = TextAlign.Start)) }
         }
         Spacer(Modifier.height(18.dp))
@@ -400,7 +397,6 @@ private fun SummaryPage(step: Step, section: Int, understood: MutableList<String
         val key = "$section:$i"
         val on = key in understood
         val bg by animateColorAsState(if (on) color.copy(alpha = 0.16f) else Color.Transparent, label = "pt")
-        val tick by animateFloatAsState(if (on) 1.1f else 0.9f, spring(Spring.DampingRatioHighBouncy), label = "tick")
         Row(
             Modifier.fillMaxWidth().padding(vertical = 4.dp).clip(RoundedCornerShape(12.dp)).background(bg)
                 .border(1.5.dp, if (on) color else PaperEdge, RoundedCornerShape(12.dp))
@@ -408,7 +404,7 @@ private fun SummaryPage(step: Step, section: Int, understood: MutableList<String
                 .testTag("point_$key").padding(12.dp),
             verticalAlignment = Alignment.Top,
         ) {
-            Box(Modifier.size(26.dp).scale(tick).clip(CircleShape).background(if (on) color else C.line), contentAlignment = Alignment.Center) {
+            Box(Modifier.size(26.dp).clip(CircleShape).background(if (on) color else C.line), contentAlignment = Alignment.Center) {
                 Text(if (on) "✓" else "${i + 1}", color = if (on) Color.White else C.muted, fontSize = 13.sp, fontWeight = FontWeight.Bold)
             }
             Spacer(Modifier.width(12.dp))
@@ -420,29 +416,27 @@ private fun SummaryPage(step: Step, section: Int, understood: MutableList<String
 @Composable
 private fun EndPage(store: Store, step: Step, section: Int, wholeChapter: Boolean, onFinished: () -> Unit, onStartQuiz: () -> Unit) {
     val color = step.subject.color
-    val bob = rememberBob(8f)
     val lastOfStep = section == step.sections.lastIndex
     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Spacer(Modifier.height(30.dp))
-        Text(if (wholeChapter) "📕" else "🎉", fontSize = 72.sp, modifier = Modifier.graphicsLayer { translationY = bob })
-        Text(if (wholeChapter) "Akhir bab" else "Subbab selesai!", color = Ink, fontFamily = FontFamily.Serif,
+        Text(if (wholeChapter) "Akhir bab" else "Akhir subbab", color = Ink, fontFamily = FontFamily.Serif,
             fontWeight = FontWeight.Bold, fontSize = 28.sp)
         Text(
             when {
-                wholeChapter && step.questions.isNotEmpty() -> "Uji pemahamanmu dengan ${step.questions.size} soal latihan bab ini."
-                wholeChapter -> "Kamu sudah membaca seluruh bab ini."
-                lastOfStep && step.questions.isNotEmpty() -> "Berikutnya di jalur: latihan bab (${step.questions.size} soal)."
+                wholeChapter && step.questions.isNotEmpty() -> "Latihan bab ini: ${step.questions.size} soal."
+                wholeChapter -> "Bab ini tidak punya latihan."
+                lastOfStep && step.questions.isNotEmpty() -> "Berikutnya: latihan bab, ${step.questions.size} soal."
                 else -> "Berikutnya: ${step.sections.getOrNull(section + 1)?.title ?: "langkah berikutnya"}."
             },
             color = InkSoft, fontFamily = FontFamily.Serif, fontSize = 16.sp, textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(10.dp))
         if (wholeChapter) {
-            if (step.questions.isNotEmpty()) BouncyButton("LATIHAN BAB INI", Modifier.fillMaxWidth().testTag("start_quiz"), color = color, onClick = onStartQuiz)
-            BouncyButton("KEMBALI KE BUKU", Modifier.fillMaxWidth().testTag("finish_read"), secondary = true, onClick = onFinished)
+            if (step.questions.isNotEmpty()) BouncyButton("Latihan bab ini", Modifier.fillMaxWidth().testTag("start_quiz"), color = color, onClick = onStartQuiz)
+            BouncyButton("Kembali ke buku", Modifier.fillMaxWidth().testTag("finish_read"), secondary = true, onClick = onFinished)
         } else {
             val already = "${step.id}#$section" in store.read
-            BouncyButton(if (already) "SELESAI  ✓" else "SELESAI  +10 XP", Modifier.fillMaxWidth().testTag("finish_read"), color = color) {
+            BouncyButton(if (already) "Selesai" else "Selesai (+10 XP)", Modifier.fillMaxWidth().testTag("finish_read"), color = color) {
                 store.markRead(step, section); onFinished()
             }
         }

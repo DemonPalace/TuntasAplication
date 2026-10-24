@@ -16,10 +16,10 @@ object Lessons {
             Section(
                 title = "Persen",
                 explain = listOf(
-                    "Persen artinya \"per seratus\". Jadi 20% sama dengan 20/100 = 0,2. Semua soal persen jadi mudah kalau kamu mengubah persen menjadi bilangan desimal lalu mengalikannya.",
-                    "Kalau harga NAIK p%, harga baru = harga lama + p% harga lama = harga lama × (1 + p/100). Kalau harga TURUN atau DISKON p%, harga baru = harga lama × (1 − p/100). Angka (1 + p/100) atau (1 − p/100) ini kita sebut faktor pengali.",
-                    "Kenapa diskon bertingkat tidak boleh dijumlah? Karena diskon kedua dihitung dari harga yang SUDAH didiskon, bukan dari harga awal. Jadi kita mengalikan faktornya berurutan.",
-                    "Kebalikannya, kalau yang diketahui harga akhir dan kita mencari harga awal, kita MEMBAGI dengan faktornya.",
+                    "Persen artinya \"per seratus\". Jadi 20% sama dengan 20/100 = 0,2. Soal persen dikerjakan dengan mengubah persen menjadi bilangan desimal, lalu mengalikannya.",
+                    "Kalau harga NAIK p%, harga baru = harga lama + p% harga lama = harga lama × (1 + p/100). Kalau harga TURUN atau DISKON p%, harga baru = harga lama × (1 − p/100). Angka (1 + p/100) atau (1 − p/100) disebut faktor pengali.",
+                    "Diskon bertingkat tidak boleh dijumlah karena diskon kedua dihitung dari harga yang SUDAH didiskon, bukan dari harga awal. Faktornya dikalikan berurutan.",
+                    "Jika yang diketahui harga akhir, harga awal didapat dengan MEMBAGI harga akhir dengan faktornya.",
                 ),
                 formulas = listOf(
                     "Naik p%: §\\text{baru} = \\text{lama} \\times \\left(1 + \\dfrac{p}{100}\\right)§",
@@ -37,7 +37,7 @@ object Lessons {
                     ex("Setelah naik 25%, harga sepatu menjadi Rp50.000. Berapa harga sebelum naik?",
                         "Faktor naik 25% = 1 + 0,25 = 1,25. Artinya harga awal × 1,25 = 50.000.",
                         "Harga awal = 50.000 ÷ 1,25 = 40.000.",
-                        "Cek: 40.000 × 1,25 = 50.000 ✓.",
+                        "Cek: 40.000 × 1,25 = 50.000.",
                         answer = "Rp40.000"),
                 ),
                 pitfalls = listOf(
@@ -65,7 +65,7 @@ object Lessons {
                 ),
                 examples = listOf(
                     ex("6 pekerja menyelesaikan rumah dalam 12 hari. Kalau pekerjanya 9 orang, berapa hari?",
-                        "Pekerja bertambah → hari berkurang, jadi berbalik nilai.",
+                        "Pekerja bertambah, jadi hari berkurang, jadi berbalik nilai.",
                         "Total pekerjaan = 6 × 12 = 72 hari-orang.",
                         "9 × n = 72 → n = 72 ÷ 9 = 8.",
                         answer = "8 hari"),
@@ -112,7 +112,7 @@ object Lessons {
                     "Mengira log(x + y) = log x + log y. Itu hanya berlaku untuk perkalian.",
                 ),
                 points = listOf(
-                    "Kali → pangkat dijumlah; bagi → dikurang; dipangkatkan lagi → dikali.",
+                    "Perkalian: pangkat dijumlah. Pembagian: pangkat dikurang. Dipangkatkan lagi: pangkat dikali.",
                     "ᵃlog b = c artinya aᶜ = b.",
                 ),
             ),
@@ -211,7 +211,7 @@ object Lessons {
                         answer = "25 m"),
                     ex("Mobil melaju 72 km/jam, direm sampai berhenti dalam 4 s. Berapa perlambatannya?",
                         "Ubah satuan: 72 ÷ 3,6 = 20 m/s.",
-                        "Berhenti → v = 0. Pakai v = v₀ + at: 0 = 20 + a·4.",
+                        "Berhenti, jadi v = 0. Pakai v = v₀ + at: 0 = 20 + a·4.",
                         "a = −20/4 = −5 m/s². Tanda minus berarti perlambatan.",
                         answer = "5 m/s²"),
                 ),
@@ -224,7 +224,7 @@ object Lessons {
             Section(
                 title = "Gerak parabola",
                 explain = listOf(
-                    "Bola yang ditendang miring bergerak melengkung karena sebenarnya ia melakukan DUA gerak sekaligus. Arah mendatar (sumbu x) tidak ada gaya, jadi geraknya GLB. Arah tegak (sumbu y) ditarik gravitasi, jadi geraknya GLBB seperti benda dilempar ke atas.",
+                    "Bola yang ditendang miring bergerak melengkung karena ia melakukan DUA gerak sekaligus. Arah mendatar (sumbu x) tidak ada gaya, jadi geraknya GLB. Arah tegak (sumbu y) ditarik gravitasi, jadi geraknya GLBB seperti benda dilempar ke atas.",
                     "Karena itu, langkah pertama selalu MENGURAIKAN kecepatan awal: vₓ = v₀ cos θ dan vᵧ = v₀ sin θ. Setelah itu tiap arah dikerjakan terpisah.",
                     "Di titik tertinggi, kecepatan tegak = 0 (bola berhenti naik), tetapi kecepatan mendatar tetap vₓ. Dari sini didapat waktu ke puncak dan tinggi maksimum.",
                 ),
@@ -283,7 +283,7 @@ object Lessons {
                 examples = listOf(
                     ex("\"Membaca setiap hari memberi banyak manfaat. Kosakata bertambah, kemampuan berpikir kritis terasa lebih tajam, dan konsentrasi meningkat. Selain itu, membaca dapat menurunkan stres.\" Apa ide pokoknya?",
                         "Kalimat 1 bersifat umum: \"memberi banyak manfaat\".",
-                        "Kalimat 2 dan 3 merinci manfaat apa saja → kalimat penjelas.",
+                        "Kalimat 2 dan 3 merinci manfaat apa saja, jadi kalimat penjelas.",
                         "Jadi paragraf deduktif dengan ide pokok di kalimat pertama.",
                         answer = "Manfaat membaca setiap hari"),
                 ),
@@ -322,8 +322,8 @@ object Lessons {
                 ),
                 examples = listOf(
                     ex("Mana yang opini? (A) Volume sampah naik 40% sejak 2021. (B) Menurut saya, pemerintah terlalu lambat menangani masalah ini.",
-                        "A berisi data yang bisa dicek ke dinas lingkungan → fakta.",
-                        "B memakai \"menurut saya\" dan penilaian \"terlalu lambat\" → opini.",
+                        "A berisi data yang bisa dicek ke dinas lingkungan, jadi fakta.",
+                        "B memakai \"menurut saya\" dan penilaian \"terlalu lambat\", jadi opini.",
                         answer = "B"),
                 ),
                 points = listOf("Fakta bisa dibuktikan; opini berisi penilaian.", "Cari kata penanda opini."),
@@ -338,7 +338,7 @@ object Lessons {
                 examples = listOf(
                     ex("\"Hujan turun sangat deras sejak pagi, ... pasar tetap ramai pembeli.\" Konjungsi yang tepat?",
                         "Bagian 1: hujan deras (biasanya membuat pasar sepi).",
-                        "Bagian 2: pasar tetap ramai → berlawanan dengan dugaan.",
+                        "Bagian 2: pasar tetap ramai, jadi berlawanan dengan dugaan.",
                         "Hubungannya pertentangan.",
                         answer = "namun"),
                 ),
@@ -371,7 +371,7 @@ object Lessons {
                         answer = "2 m/s²"),
                     ex("Balok 4 kg di lantai licin ditarik 20 N dengan sudut 60°. Berapa percepatannya?",
                         "Komponen mendatar: F cos 60° = 20 × 0,5 = 10 N.",
-                        "Lantai licin → tidak ada gesekan.",
+                        "Lantai licin, jadi tidak ada gesekan.",
                         "a = 10/4 = 2,5 m/s².",
                         answer = "2,5 m/s²"),
                 ),
@@ -460,7 +460,7 @@ object Lessons {
                 title = "Teorema Pythagoras",
                 explain = listOf(
                     "Pada segitiga siku-siku, kuadrat sisi miring (sisi terpanjang, di depan sudut siku) sama dengan jumlah kuadrat dua sisi lainnya: c² = a² + b².",
-                    "Kenapa? Kalau kamu menggambar persegi di setiap sisi segitiga, luas persegi pada sisi miring tepat sama dengan jumlah luas dua persegi lainnya.",
+                    "Jika persegi digambar pada setiap sisi segitiga, luas persegi pada sisi miring tepat sama dengan jumlah luas dua persegi lainnya.",
                     "Menghafal tripel Pythagoras (3-4-5, 6-8-10, 5-12-13, 8-15-17, 7-24-25) sangat menghemat waktu di ujian.",
                 ),
                 formulas = listOf("§c^2 = a^2 + b^2§ (c = sisi miring)"),
@@ -520,7 +520,7 @@ object Lessons {
                 explain = listOf(
                     "Trigonometri membandingkan sisi-sisi segitiga siku-siku terhadap salah satu sudut lancipnya. Dari sudut itu, ada sisi DEPAN (di seberang sudut), sisi SAMPING (menempel di sudut, bukan miring), dan sisi MIRING.",
                     "sin = depan/miring, cos = samping/miring, tan = depan/samping. Jembatan keledai: \"sindemi cossami tandesa\".",
-                    "Nilai sudut istimewa harus hafal. Trik: sin 0°, 30°, 45°, 60°, 90° = ½√0, ½√1, ½√2, ½√3, ½√4. Cos adalah urutan kebalikannya.",
+                    "Nilai sudut istimewa perlu dihafal. Polanya: sin 0°, 30°, 45°, 60°, 90° = ½√0, ½√1, ½√2, ½√3, ½√4. Cos adalah urutan kebalikannya.",
                     "Soal kontekstual (tangga, layang-layang, bayangan gedung) selalu dimulai dengan menggambar segitiganya dan menandai sisi depan/samping/miring dari sudut yang diketahui.",
                 ),
                 formulas = listOf(
@@ -532,7 +532,7 @@ object Lessons {
                 examples = listOf(
                     ex("Tangga 10 m bersandar di dinding, membentuk sudut 30° dengan tanah. Berapa tinggi ujung atas tangga?",
                         "Tangga = sisi miring (10 m). Tinggi dinding = sisi DEPAN sudut 30°.",
-                        "Depan dan miring → sin.",
+                        "Depan dan miring, jadi sin.",
                         "tinggi = 10 × sin 30° = 10 × ½ = 5 m.",
                         answer = "5 m"),
                 ),
@@ -584,7 +584,7 @@ object Lessons {
                 ),
                 examples = listOf(
                     ex("\"Sejak menang lomba, Rani menjadi buah bibir di kampungnya.\" Makna buah bibir?",
-                        "Rani tidak berubah menjadi buah sungguhan → maknanya kias.",
+                        "Rani tidak berubah menjadi buah sungguhan, jadi maknanya kias.",
                         "Orang menang lomba biasanya dibicarakan banyak orang.",
                         answer = "Bahan pembicaraan"),
                 ),
@@ -657,7 +657,7 @@ object Lessons {
                         "Masuk akal: luas jadi ¼, kecepatan jadi 4 kali.",
                         answer = "8 m/s"),
                 ),
-                points = listOf("A₁v₁ = A₂v₂: pipa sempit → aliran cepat.", "Aliran cepat → tekanan kecil (Bernoulli)."),
+                points = listOf("A₁v₁ = A₂v₂: pipa sempit, jadi aliran cepat.", "Aliran cepat, jadi tekanan kecil (Bernoulli)."),
             ),
         ),
 
@@ -668,7 +668,7 @@ object Lessons {
                 explain = listOf(
                     "Ukuran pemusatan data ada tiga. Mean (rata-rata) = jumlah semua data ÷ banyak data. Median = nilai tengah setelah data DIURUTKAN; kalau banyak data genap, rata-ratakan dua data tengah. Modus = data yang paling sering muncul.",
                     "Jangkauan mengukur sebaran: data terbesar − data terkecil.",
-                    "Soal rata-rata gabungan: jangan rata-ratakan rata-rata! Ubah dulu menjadi JUMLAH nilai (n × rata-rata), baru dihitung.",
+                    "Soal rata-rata gabungan: jangan merata-ratakan rata-rata. Ubah dulu menjadi JUMLAH nilai (n × rata-rata), baru dihitung.",
                     "Di TKA, data sering disajikan dalam tabel atau grafik. Baca judul, satuan, dan skala sumbu sebelum menghitung.",
                 ),
                 formulas = listOf("§\\bar{x} = \\dfrac{\\Sigma x}{n}§", "Median: urutkan dulu; jika n genap §Me = \\dfrac{x_{n/2} + x_{n/2 + 1}}{2}§", "§J = x_{\\text{maks}} - x_{\\text{min}}§", "§\\text{Total} = n \\times \\bar{x}§"),
@@ -681,7 +681,7 @@ object Lessons {
                     ex("Data 6, 7, 7, 8, 9, 9, 9, 10. Tentukan median dan modus.",
                         "Data sudah urut, banyaknya 8 (genap).",
                         "Data ke-4 dan ke-5: 8 dan 9 → median (8 + 9)/2 = 8,5.",
-                        "9 muncul tiga kali → modus 9.",
+                        "9 muncul tiga kali, jadi modus 9.",
                         answer = "Median 8,5; modus 9"),
                 ),
                 points = listOf("Median: urutkan dulu.", "Rata-rata gabungan: pakai total nilai."),
@@ -696,15 +696,15 @@ object Lessons {
                 formulas = listOf("§P(n, r) = \\dfrac{n!}{(n - r)!}§", "§C(n, r) = \\dfrac{n!}{r!\\,(n - r)!}§"),
                 examples = listOf(
                     ex("Dari 5 calon dipilih ketua dan sekretaris. Berapa susunan?",
-                        "Jabatan berbeda → urutan penting → permutasi.",
+                        "Jabatan berbeda, jadi urutan penting, jadi permutasi.",
                         "P(5, 2) = 5 × 4 = 20.",
                         answer = "20"),
                     ex("Dari 5 siswa dipilih 2 untuk ikut lomba. Berapa cara?",
-                        "Tidak ada jabatan → kombinasi.",
+                        "Tidak ada jabatan, jadi kombinasi.",
                         "C(5, 2) = (5 × 4)/(2 × 1) = 10.",
                         answer = "10"),
                 ),
-                points = listOf("Urutan penting → permutasi; tidak penting → kombinasi."),
+                points = listOf("Urutan penting, jadi permutasi; tidak penting, jadi kombinasi."),
             ),
             Section(
                 title = "Peluang kejadian",
@@ -733,7 +733,7 @@ object Lessons {
                 explain = listOf(
                     "Gelombang adalah getaran yang merambat sambil membawa ENERGI, bukan membawa materi. Gabus di kolam hanya naik-turun di tempat saat ombak lewat.",
                     "Panjang gelombang λ adalah jarak satu gelombang penuh (satu bukit + satu lembah). Frekuensi f adalah jumlah gelombang per detik. Periode T adalah waktu untuk satu gelombang, jadi T = 1/f.",
-                    "Cepat rambat v = λ × f. Logikanya: tiap detik ada f gelombang lewat, masing-masing sepanjang λ.",
+                    "Cepat rambat v = λ × f, karena tiap detik ada f gelombang yang lewat dan masing-masing sepanjang λ.",
                     "Gelombang transversal arah getarnya tegak lurus arah rambat (tali, cahaya). Gelombang longitudinal arah getarnya searah arah rambat, berupa rapatan dan regangan (bunyi, pegas).",
                 ),
                 formulas = listOf("§v = \\lambda f§", "§T = \\dfrac{1}{f} = \\dfrac{t}{n} \\qquad f = \\dfrac{n}{t}§"),
@@ -749,7 +749,7 @@ object Lessons {
                 title = "Bunyi: intensitas & efek Doppler",
                 explain = listOf(
                     "Bunyi adalah gelombang mekanik longitudinal, jadi butuh medium (udara, air, padat) dan tidak bisa merambat di ruang hampa.",
-                    "Intensitas bunyi adalah daya per luas. Bunyi menyebar ke segala arah seperti permukaan bola, luasnya 4πr². Karena itu intensitas berbanding terbalik dengan KUADRAT jarak: jarak 2 kali → intensitas ¼.",
+                    "Intensitas bunyi adalah daya per luas. Bunyi menyebar ke segala arah seperti permukaan bola, luasnya 4πr². Karena itu intensitas berbanding terbalik dengan KUADRAT jarak: jarak 2 kali, jadi intensitas ¼.",
                     "Efek Doppler: frekuensi yang kamu dengar berubah kalau sumber atau pendengar bergerak. Saat ambulans MENDEKAT, gelombang \"terdesak\" sehingga frekuensi terdengar LEBIH TINGGI. Saat MENJAUH, terdengar lebih rendah.",
                 ),
                 formulas = listOf("§I = \\dfrac{P}{4\\pi r^2} \\qquad \\dfrac{I_1}{I_2} = \\left(\\dfrac{r_2}{r_1}\\right)^2§", "§f_p = \\dfrac{v \\pm v_p}{v \\mp v_s}\\, f_s§ (tanda atas saat saling mendekat)"),
@@ -759,7 +759,7 @@ object Lessons {
                         "Itu terjadi saat keduanya saling mendekat.",
                         answer = "Saat saling mendekat"),
                 ),
-                points = listOf("Jarak 2× → intensitas ¼.", "Mendekat → frekuensi naik; menjauh → turun."),
+                points = listOf("Jarak 2× → intensitas ¼.", "Mendekat, jadi frekuensi naik; menjauh, jadi turun."),
             ),
             Section(
                 title = "Cahaya: cermin & lensa",
@@ -774,7 +774,7 @@ object Lessons {
                     ex("Benda 15 cm di depan cermin cekung f = 10 cm. Di mana bayangannya?",
                         "1/s' = 1/f − 1/s = 1/10 − 1/15.",
                         "Samakan penyebut: 3/30 − 2/30 = 1/30.",
-                        "s' = 30 cm, positif → nyata, di depan cermin.",
+                        "s' = 30 cm, positif, jadi nyata, di depan cermin.",
                         answer = "30 cm di depan cermin"),
                 ),
                 pitfalls = listOf("Lupa memberi tanda negatif pada fokus cermin cembung/lensa cekung."),
@@ -821,7 +821,7 @@ object Lessons {
                 formulas = listOf("Boyle: §P_1 V_1 = P_2 V_2§", "§\\dfrac{P_1 V_1}{T_1} = \\dfrac{P_2 V_2}{T_2}§ (T dalam kelvin)", "§PV = nRT§"),
                 examples = listOf(
                     ex("Gas 2 atm, 3 L dikembangkan pada suhu tetap menjadi 6 L. Tekanannya?",
-                        "Suhu tetap → Boyle.",
+                        "Suhu tetap, jadi Boyle.",
                         "2 × 3 = P × 6 → P = 1 atm.",
                         answer = "1 atm"),
                 ),

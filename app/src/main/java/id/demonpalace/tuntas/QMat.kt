@@ -125,7 +125,7 @@ object QMat {
             "Titik pojok: (0, 0) → 0, (4, 0) → 12, (0, 2) → 4, dan perpotongan (3, 1) → 11. Maksimumnya 12."),
         q("mp6", "Pedagang membeli tas A seharga Rp40.000 (untung Rp10.000) dan tas B seharga Rp60.000 (untung Rp15.000). Modalnya Rp1.200.000 dan kiosnya muat 25 tas. Keuntungan maksimum adalah ....",
             listOf("Rp250.000", "Rp275.000", "Rp300.000", "Rp325.000", "Rp375.000"), 2,
-            "Kendala §2a + 3b \\leq 60§ dan §a + b \\leq 25§. Titik pojok (25, 0) → Rp250.000, (15, 10) → Rp300.000, (0, 20) → Rp300.000."),
+            "Kendala §2a + 3b \\leq 60§ dan §a + b \\leq 25§. Nilai di titik pojok: (25, 0) Rp250.000; (15, 10) Rp300.000; (0, 20) Rp300.000."),
         q("mp7", "Banyak bilangan bulat x yang memenuhi §x^2 - 5x + 4 < 0§ adalah ....",
             listOf("1", "2", "3", "4", "5"), 1,
             "§(x - 1)(x - 4) < 0§ memberi §1 < x < 4§. Bilangan bulatnya 2 dan 3."),

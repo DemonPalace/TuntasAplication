@@ -74,7 +74,7 @@ fun ProgressRing(
             val tl = Offset(s / 2, s / 2)
             drawArc(C.line, 0f, 360f, false, tl, arcSize, style = Stroke(s))
             drawArc(
-                Brush.sweepGradient(listOf(color.copy(alpha = 0.6f), color, color)),
+                color,
                 -90f, 360f * anim.value, false, tl, arcSize, style = Stroke(s, cap = StrokeCap.Round),
             )
         }
@@ -99,7 +99,7 @@ fun LinearBar(progress: Float, color: Color, modifier: Modifier = Modifier, heig
     }
 }
 
-/** Chunky Duolingo-style button: solid fill on a darker lip that presses down. */
+/** Flat button: solid fill, 12dp corners, a darker fill while pressed. */
 @Composable
 fun BouncyButton(
     text: String,
@@ -112,28 +112,21 @@ fun BouncyButton(
 ) {
     val src = remember { MutableInteractionSource() }
     val pressed by src.collectIsPressedAsState()
-    val press by animateFloatAsState(if (pressed && enabled) 1f else 0f, spring(Spring.DampingRatioMediumBouncy), label = "press")
-    val face = when { !enabled -> C.surface2; secondary -> Color.White; else -> color }
-    val lip = when { !enabled -> C.line; secondary -> C.line; color == Color.White -> Color(0xFFE5E5E5); else -> darken(color) }
+    val base = when { !enabled -> C.surface2; secondary -> Color.White; else -> color }
+    val face = if (pressed && enabled) darken(base, 0.9f) else base
     val label = when { !enabled -> C.faded; secondary -> C.blue; else -> textColor }
-    Box(modifier.padding(bottom = 4.dp)) {
-        Box(
-            Modifier.matchParentSize().offset(y = 4.dp).clip(RoundedCornerShape(14.dp)).background(lip)
-        )
-        Box(
-            Modifier
-                .fillMaxWidth()
-                .offset(y = (4 * press).dp)
-                .clip(RoundedCornerShape(14.dp))
-                .background(face)
-                .then(if (secondary) Modifier.border(2.dp, C.line, RoundedCornerShape(14.dp)) else Modifier)
-                .clickable(src, null, enabled = enabled, onClick = onClick)
-                .padding(horizontal = 18.dp, vertical = 14.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(text.uppercase(), color = label, style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.ExtraBold, letterSpacing = 0.8.sp, textAlign = TextAlign.Center)
-        }
+    Box(
+        modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(face)
+            .then(if (secondary || !enabled) Modifier.border(2.dp, C.line, RoundedCornerShape(12.dp)) else Modifier)
+            .clickable(src, null, enabled = enabled, onClick = onClick)
+            .padding(horizontal = 18.dp, vertical = 14.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(text, color = label, style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
     }
 }
 
@@ -155,59 +148,9 @@ fun Pill(text: String, color: Color, modifier: Modifier = Modifier) {
 @Composable
 fun Card(modifier: Modifier = Modifier, color: Color = C.surface, content: @Composable BoxScope.() -> Unit) {
     Box(
-        modifier.clip(RoundedCornerShape(16.dp)).background(color).border(2.dp, C.line, RoundedCornerShape(16.dp)).padding(18.dp),
+        modifier.clip(RoundedCornerShape(12.dp)).background(color).border(2.dp, C.line, RoundedCornerShape(12.dp)).padding(18.dp),
         content = content,
     )
-}
-
-/** Gentle up-down float, used on the current step and on mascots. */
-@Composable
-fun rememberBob(amplitude: Float = 6f, period: Int = 1400): Float {
-    val t = rememberInfiniteTransition(label = "bob")
-    val v by t.animateFloat(-amplitude, amplitude, infiniteRepeatable(tween(period, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "bobv")
-    return v
-}
-
-@Composable
-fun rememberPulse(): Float {
-    val t = rememberInfiniteTransition(label = "pulse")
-    val v by t.animateFloat(0f, 1f, infiniteRepeatable(tween(1600, easing = LinearEasing)), label = "pulsev")
-    return v
-}
-
-private data class Particle(val angle: Float, val speed: Float, val color: Color, val spin: Float, val w: Float)
-
-/** One-shot confetti burst drawn on a Canvas; restarts whenever [key] changes. */
-@Composable
-fun Confetti(key: Any, modifier: Modifier = Modifier) {
-    val particles = remember(key) {
-        val colors = listOf(C.violet, C.pink, C.gold, C.good, Color(0xFF5B8CFF), Color.White)
-        List(90) {
-            Particle(
-                angle = Random.nextFloat() * 360f,
-                speed = 0.35f + Random.nextFloat() * 0.75f,
-                color = colors.random(),
-                spin = Random.nextFloat() * 720f - 360f,
-                w = 6f + Random.nextFloat() * 8f,
-            )
-        }
-    }
-    val t = remember(key) { Animatable(0f) }
-    LaunchedEffect(key) { t.animateTo(1f, tween(2200, easing = LinearEasing)) }
-    if (t.value >= 1f) return
-    Canvas(modifier.fillMaxSize()) {
-        val origin = Offset(size.width / 2, size.height * 0.35f)
-        val maxR = size.minDimension * 0.75f
-        particles.forEach { p ->
-            val rad = Math.toRadians(p.angle.toDouble())
-            val d = maxR * p.speed * (1 - (1 - t.value) * (1 - t.value))
-            val x = origin.x + (cos(rad) * d).toFloat()
-            val y = origin.y + (sin(rad) * d).toFloat() + 900f * t.value * t.value
-            rotate(p.spin * t.value, Offset(x, y)) {
-                drawRect(p.color.copy(alpha = 1f - t.value * 0.8f), Offset(x, y), Size(p.w, p.w * 0.55f))
-            }
-        }
-    }
 }
 
 @Composable

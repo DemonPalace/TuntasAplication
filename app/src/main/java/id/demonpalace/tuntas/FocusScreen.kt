@@ -77,15 +77,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-private val quotes = listOf(
-    "HP bisa menunggu. TKA tidak.",
-    "Satu jam fokus lebih berharga dari tiga jam sambil scroll.",
-    "Kamu sedang mengalahkan versi dirimu yang malas.",
-    "Rasa bosan itu tanda otakmu sedang bekerja.",
-    "2 November makin dekat. Gas!",
-    "Sedikit lagi. Jangan menyerah sekarang.",
-)
-
 private const val MIN_TYPED = 150
 
 /** Always-composed helper: advances the session timer, pins the app and keeps the screen awake while a session runs. */
@@ -136,14 +127,12 @@ private fun BlockedBanner(pkg: String, onDismiss: () -> Unit) {
     val ctx = LocalContext.current
     val label = remember(pkg) { appLabel(ctx, pkg) }
     Row(
-        Modifier.padding(12.dp).fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(C.bad).clickable(onClick = onDismiss).padding(16.dp),
+        Modifier.padding(12.dp).fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(C.bad).clickable(onClick = onDismiss).padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text("🚫", fontSize = 28.sp)
-        Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
-            Text("$label diblokir", color = Color.White, style = MaterialTheme.typography.titleMedium)
-            Text("Balik belajar dulu ya. Ketuk untuk menutup.", color = Color.White.copy(alpha = 0.9f), style = MaterialTheme.typography.bodyMedium)
+            Text("$label diblokir selama sesi", color = Color.White, style = MaterialTheme.typography.titleMedium)
+            Text("Ketuk untuk menutup.", color = Color.White.copy(alpha = 0.9f), style = MaterialTheme.typography.bodyMedium)
         }
     }
 }
@@ -153,7 +142,7 @@ private data class Preset(val label: String, val study: Int, val practice: Int, 
 private val presets = listOf(
     Preset("Sesi TKA", 300, 60, "5 jam belajar + 1 jam soal"),
     Preset("Setengah", 120, 30, "2 jam belajar + 30 menit soal"),
-    Preset("Coba dulu", 25, 10, "25 menit + 10 menit"),
+    Preset("Singkat", 25, 10, "25 menit + 10 menit"),
 )
 
 @Composable
@@ -166,23 +155,23 @@ private fun SessionSetup(store: Store) {
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         Text("Sesi Harian", color = C.text, style = MaterialTheme.typography.headlineLarge)
-        Text("Belajar → latihan soal → tulis ringkasan. Selama sesi berjalan, aplikasi disematkan, layar tetap menyala, dan aplikasi lain ditutup otomatis.",
+        Text("Urutan sesi: belajar, latihan soal, lalu ringkasan. Selama sesi, aplikasi disematkan, layar tetap menyala, dan aplikasi lain ditutup otomatis.",
             color = C.muted, style = MaterialTheme.typography.bodyLarge)
 
-        // Visual timeline of the three phases.
+        // The three phases in order.
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            PhaseChip("📚", "Belajar", fmtMin(presets[pick].study), C.violet, Modifier.weight(1f))
-            PhaseChip("✍️", "Soal", fmtMin(presets[pick].practice), C.pink, Modifier.weight(1f))
-            PhaseChip("📷", "Ringkasan", "foto/ketik", C.good, Modifier.weight(1f))
+            PhaseChip("1. Belajar", fmtMin(presets[pick].study), C.violet, Modifier.weight(1f))
+            PhaseChip("2. Soal", fmtMin(presets[pick].practice), C.pink, Modifier.weight(1f))
+            PhaseChip("3. Ringkasan", "foto/ketik", C.good, Modifier.weight(1f))
         }
 
         SectionTitle("Pilih durasi")
         presets.forEachIndexed { i, p ->
             val on = i == pick
             Row(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp))
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
                     .background(if (on) C.violet.copy(alpha = 0.18f) else C.surface)
-                    .border(2.dp, if (on) C.violet else C.surface, RoundedCornerShape(18.dp))
+                    .border(2.dp, if (on) C.violet else C.line, RoundedCornerShape(12.dp))
                     .clickable { pick = i }.testTag("preset_$i").padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -196,13 +185,13 @@ private fun SessionSetup(store: Store) {
 
         val blockerOn = isBlockerEnabled(ctx)
         if (!blockerOn) {
-            Text("⚠️ Pemblokir belum aktif, jadi aplikasi lain belum bisa ditutup otomatis. Aktifkan di tab Blokir.",
+            Text("Pemblokir belum aktif, jadi aplikasi lain belum bisa ditutup otomatis. Aktifkan di tab Blokir.",
                 color = C.gold, style = MaterialTheme.typography.bodyMedium)
         }
-        Text("Saat mulai, Android akan bertanya \"Sematkan aplikasi?\". Pilih Ya / Mengerti. Kalau tidak muncul, aktifkan Setelan → Keamanan → Sematkan aplikasi.",
+        Text("Saat mulai, Android akan bertanya \"Sematkan aplikasi?\". Pilih Ya atau Mengerti. Kalau tidak muncul, aktifkan di Setelan, Keamanan, Sematkan aplikasi.",
             color = C.muted, style = MaterialTheme.typography.bodyMedium)
 
-        BouncyButton("MULAI SESI SEKARANG", Modifier.fillMaxWidth().testTag("start_session")) {
+        BouncyButton("Mulai", Modifier.fillMaxWidth().testTag("start_session")) {
             store.setDurations(presets[pick].study, presets[pick].practice)
             store.startSession()
         }
@@ -217,12 +206,11 @@ private fun SessionSetup(store: Store) {
 }
 
 @Composable
-private fun PhaseChip(icon: String, label: String, value: String, color: Color, modifier: Modifier) {
+private fun PhaseChip(label: String, value: String, color: Color, modifier: Modifier) {
     Column(
-        modifier.clip(RoundedCornerShape(18.dp)).background(color.copy(alpha = 0.16f)).padding(vertical = 12.dp),
+        modifier.clip(RoundedCornerShape(12.dp)).border(2.dp, C.line, RoundedCornerShape(12.dp)).padding(vertical = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(icon, fontSize = 24.sp)
         Text(label, color = C.text, style = MaterialTheme.typography.labelLarge)
         Text(value, color = color, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
     }
@@ -230,7 +218,7 @@ private fun PhaseChip(icon: String, label: String, value: String, color: Color, 
 
 @Composable
 private fun MiniStat(label: String, value: String, color: Color, modifier: Modifier) {
-    Column(modifier.clip(RoundedCornerShape(18.dp)).background(C.surface).padding(14.dp)) {
+    Column(modifier.clip(RoundedCornerShape(12.dp)).background(C.surface).border(2.dp, C.line, RoundedCornerShape(12.dp)).padding(14.dp)) {
         Text(label, color = C.muted, style = MaterialTheme.typography.labelMedium)
         Text(value, color = color, style = MaterialTheme.typography.titleLarge)
     }
@@ -248,7 +236,10 @@ private fun SessionRunning(store: Store) {
     val left = (store.phaseEndAt - now).coerceAtLeast(0)
     val frac = 1f - left / total.toFloat()
     val color = if (store.phase == 1) C.violet else C.pink
-    val quote = quotes[((now / 60_000L) % quotes.size).toInt()]
+    val endsAt = remember(store.phaseEndAt) {
+        java.time.Instant.ofEpochMilli(store.phaseEndAt).atZone(java.time.ZoneId.systemDefault()).toLocalTime()
+            .format(DateTimeFormatter.ofPattern("HH:mm"))
+    }
     val current = Content.steps.firstOrNull { it.id !in store.done }
 
     Column(
@@ -257,42 +248,40 @@ private fun SessionRunning(store: Store) {
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            StepDot("📚 Belajar", store.phase == 1, store.phase > 1, C.violet, Modifier.weight(1f))
-            StepDot("✍️ Soal", store.phase == 2, store.phase > 2, C.pink, Modifier.weight(1f))
-            StepDot("📷 Ringkas", false, false, C.good, Modifier.weight(1f))
+            StepDot("1. Belajar", store.phase == 1, store.phase > 1, C.violet, Modifier.weight(1f))
+            StepDot("2. Soal", store.phase == 2, store.phase > 2, C.pink, Modifier.weight(1f))
+            StepDot("3. Ringkasan", false, false, C.good, Modifier.weight(1f))
         }
         Text(if (store.phase == 1) "WAKTU BELAJAR" else "WAKTU LATIHAN SOAL", color = color, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Black)
         Box(Modifier.size(260.dp), contentAlignment = Alignment.Center) {
-            val pulse = rememberPulse()
             Canvas(Modifier.fillMaxSize()) {
                 val s = 22f
                 val tl = Offset(s, s)
                 val sz = Size(size.width - 2 * s, size.height - 2 * s)
-                drawCircle(color.copy(alpha = 0.12f * (1 - pulse)), radius = size.minDimension / 2 * (0.9f + 0.1f * pulse))
                 drawArc(C.line, 0f, 360f, false, tl, sz, style = Stroke(s))
-                drawArc(Brush.sweepGradient(listOf(color, C.gold, color)), -90f, 360f * frac, false, tl, sz, style = Stroke(s, cap = StrokeCap.Round))
+                drawArc(color, -90f, 360f * frac, false, tl, sz, style = Stroke(s, cap = StrokeCap.Round))
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(fmtClock(left), color = C.text, fontSize = 46.sp, fontWeight = FontWeight.Black, fontFamily = FontFamily.Monospace)
                 Text("tersisa", color = C.muted)
             }
         }
-        Text("“$quote”", color = C.text, style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
+        Text("Fase ini berakhir pukul $endsAt.", color = C.text, style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
 
         Card(Modifier.fillMaxWidth()) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(if (store.phase == 1) "YANG DIPELAJARI SEKARANG" else "YANG DIKERJAKAN SEKARANG", color = C.muted, style = MaterialTheme.typography.labelMedium)
                 Text(
-                    if (store.phase == 1) (current?.let { "${it.subject.emoji} ${it.title}" } ?: "Semua materi selesai, ulang rumus inti")
-                    else "Kerjakan kuis langkah yang sedang dipelajari, tryout, atau Progres → Ulang soal salah.",
+                    if (store.phase == 1) (current?.let { "${it.subject.label}: ${it.title}" } ?: "Semua materi selesai. Ulang rumus inti.")
+                    else "Kuis bab yang sedang dipelajari, tryout, atau Progres, bagian Ulang soal salah.",
                     color = C.text, style = MaterialTheme.typography.titleMedium,
                 )
-                Text("Buka tab Jalur untuk materi dan soal. Kamu tetap di dalam aplikasi ini.", color = C.muted, style = MaterialTheme.typography.bodyMedium)
+                Text("Materi dan soal ada di tab Jalur.", color = C.muted, style = MaterialTheme.typography.bodyMedium)
             }
         }
 
         if (!pinned) {
-            BouncyButton("📌 Pin terlepas, sematkan lagi", Modifier.fillMaxWidth(),
+            BouncyButton("Sematkan lagi", Modifier.fillMaxWidth(),
                 color = C.gold) {
                 runCatching { (ctx as? Activity)?.startLockTask() }
             }
@@ -305,7 +294,7 @@ private fun SessionRunning(store: Store) {
 private fun StepDot(label: String, active: Boolean, done: Boolean, color: Color, modifier: Modifier) {
     Text(
         (if (done) "✓ " else "") + label,
-        modifier.clip(RoundedCornerShape(50)).background(if (active) color else if (done) color.copy(alpha = 0.3f) else C.surface)
+        modifier.clip(RoundedCornerShape(12.dp)).background(if (active) color else if (done) color.copy(alpha = 0.3f) else C.surface)
             .padding(vertical = 8.dp),
         color = if (active) Color.White else if (done) C.text else C.muted, textAlign = TextAlign.Center,
         style = MaterialTheme.typography.labelLarge,
@@ -319,7 +308,7 @@ private fun EmergencyButton(onExit: () -> Unit) {
     val scope = rememberCoroutineScope()
     var job by remember { mutableStateOf<Job?>(null) }
     Box(
-        Modifier.fillMaxWidth().height(54.dp).clip(RoundedCornerShape(18.dp)).background(C.surface)
+        Modifier.fillMaxWidth().height(54.dp).clip(RoundedCornerShape(12.dp)).background(C.surface).border(2.dp, C.line, RoundedCornerShape(12.dp))
             .pointerInput(Unit) {
                 detectTapGestures(onPress = {
                     job = scope.launch {
@@ -336,7 +325,7 @@ private fun EmergencyButton(onExit: () -> Unit) {
     ) {
         Box(Modifier.fillMaxWidth(hold.value).height(54.dp).background(C.bad.copy(alpha = 0.6f)))
         Text(
-            if (hold.value > 0f) "Tahan terus… ${(5 - hold.value * 5).toInt() + 1} detik" else "🆘 Darurat: tahan 5 detik untuk keluar (tanpa XP)",
+            if (hold.value > 0f) "Tahan ${(5 - hold.value * 5).toInt() + 1} detik lagi" else "Keluar darurat: tahan 5 detik (tanpa XP)",
             color = C.text, style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(horizontal = 16.dp),
         )
     }
@@ -347,11 +336,10 @@ private fun SessionSummary(store: Store) {
     val ctx = LocalContext.current
     var mode by remember { mutableIntStateOf(0) } // 0 choose, 1 typing
     var text by remember { mutableStateOf("") }
-    var celebrate by remember { mutableStateOf(false) }
     var pendingFile by remember { mutableStateOf<File?>(null) }
     val camera = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { ok ->
         val f = pendingFile
-        if (ok && f != null && f.length() > 0) { celebrate = true; store.completeSession(f.absolutePath) }
+        if (ok && f != null && f.length() > 0) store.completeSession(f.absolutePath)
         else f?.delete()
     }
     Box(Modifier.fillMaxSize()) {
@@ -359,12 +347,12 @@ private fun SessionSummary(store: Store) {
             Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            Text("✍️ Tahap terakhir", color = C.good, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Black)
-            Text("Tulis ringkasan hari ini", color = C.text, style = MaterialTheme.typography.headlineLarge)
-            Text("Tulis rumus, konsep, dan soal yang salah tadi. Pin sudah dilepas supaya kamera bisa dibuka. Sesi baru tuntas (dan +100 XP) setelah ringkasan tersimpan.",
+            Text("Tahap 3 dari 3", color = C.good, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Black)
+            Text("Ringkasan hari ini", color = C.text, style = MaterialTheme.typography.headlineLarge)
+            Text("Tulis rumus, konsep, dan soal yang salah hari ini. Pin dilepas agar kamera bisa dibuka. Sesi tercatat tuntas (+100 XP) setelah ringkasan tersimpan.",
                 color = C.muted, style = MaterialTheme.typography.bodyLarge)
             if (mode == 0) {
-                BouncyButton("📷  FOTO TULISAN DI BUKU", Modifier.fillMaxWidth().testTag("take_photo"),
+                BouncyButton("Foto catatan", Modifier.fillMaxWidth().testTag("take_photo"),
                     color = C.good) {
                     val dir = File(ctx.filesDir, "ringkasan").apply { mkdirs() }
                     val f = File(dir, "ringkasan_${LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmss"))}.jpg")
@@ -372,7 +360,7 @@ private fun SessionSummary(store: Store) {
                     val uri: Uri = FileProvider.getUriForFile(ctx, "${ctx.packageName}.files", f)
                     runCatching { camera.launch(uri) }
                 }
-                BouncyButton("⌨️  TIDAK ADA BUKU? KETIK SAJA", Modifier.fillMaxWidth().testTag("type_notes"),
+                BouncyButton("Ketik catatan", Modifier.fillMaxWidth().testTag("type_notes"),
                     secondary = true) { mode = 1 }
             } else {
                 OutlinedTextField(
@@ -383,19 +371,17 @@ private fun SessionSummary(store: Store) {
                 )
                 val enough = text.trim().length >= MIN_TYPED
                 LinearBar(text.trim().length / MIN_TYPED.toFloat(), if (enough) C.good else C.gold)
-                Text(if (enough) "Cukup! Simpan sekarang." else "Minimal $MIN_TYPED karakter (${text.trim().length}/$MIN_TYPED). Tulis yang benar-benar kamu pelajari.",
+                Text(if (enough) "${text.trim().length} karakter. Sudah bisa disimpan." else "Minimal $MIN_TYPED karakter (${text.trim().length}/$MIN_TYPED).",
                     color = if (enough) C.good else C.muted, style = MaterialTheme.typography.bodyMedium)
-                BouncyButton("SIMPAN RINGKASAN", Modifier.fillMaxWidth().testTag("save_notes"), enabled = enough) {
+                BouncyButton("Simpan", Modifier.fillMaxWidth().testTag("save_notes"), enabled = enough) {
                     val dir = File(ctx.filesDir, "ringkasan").apply { mkdirs() }
                     val f = File(dir, "ringkasan_${LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmss"))}.txt")
                     f.writeText(text.trim())
-                    celebrate = true
                     store.completeSession(f.absolutePath)
                 }
-                Text("‹ Pakai foto saja", color = C.muted, modifier = Modifier.clip(RoundedCornerShape(10.dp)).clickable { mode = 0 }.padding(8.dp))
+                Text("Pakai foto", color = C.muted, modifier = Modifier.clip(RoundedCornerShape(10.dp)).clickable { mode = 0 }.padding(8.dp))
             }
         }
-        if (celebrate) Confetti(Unit)
     }
 }
 

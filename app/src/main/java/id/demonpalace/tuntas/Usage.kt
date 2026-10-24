@@ -6,6 +6,8 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
 import android.os.Process
 import android.provider.Settings
 import java.time.LocalDate
@@ -34,6 +36,30 @@ fun hasUsageAccess(ctx: Context): Boolean {
     @Suppress("DEPRECATION")
     val mode = ops.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), ctx.packageName)
     return mode == AppOpsManager.MODE_ALLOWED
+}
+
+/**
+ * Android 13+ greys out Aksesibilitas and Akses penggunaan for sideloaded APKs ("Setelan terbatas")
+ * until the user allows it from App info. Reads the platform's own app-op for this; if that is not
+ * readable, falls back to "installed from a file on Android 13+".
+ */
+fun restrictedSettingsBlocked(ctx: Context): Boolean {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return false
+    val ops = ctx.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+    runCatching {
+        @Suppress("DEPRECATION")
+        return ops.checkOpNoThrow("android:access_restricted_settings", Process.myUid(), ctx.packageName) != AppOpsManager.MODE_ALLOWED
+    }
+    return runCatching {
+        val src = ctx.packageManager.getInstallSourceInfo(ctx.packageName).packageSource
+        src == android.content.pm.PackageInstaller.PACKAGE_SOURCE_DOWNLOADED_FILE || src == android.content.pm.PackageInstaller.PACKAGE_SOURCE_LOCAL_FILE
+    }.getOrDefault(true)
+}
+
+fun openAppInfo(ctx: Context) {
+    ctx.startActivity(
+        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${ctx.packageName}")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+    )
 }
 
 fun appLabel(ctx: Context, pkg: String): String = runCatching {

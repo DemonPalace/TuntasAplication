@@ -134,29 +134,21 @@ private fun MapHeader(store: Store) {
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            HeaderChip("🔥", "${store.streak}", C.pink)
-            HeaderChip("⭐", "${store.xp} XP", C.gold)
-            HeaderChip("🏅", "Lv ${store.level}", C.violet)
+            HeaderChip("${store.streak} hari beruntun")
+            HeaderChip("${store.xp} XP")
+            HeaderChip("Level ${store.level}")
             Spacer(Modifier.weight(1f))
-            HeaderChip("⏳", "$daysLeft hari", C.good)
+            HeaderChip("TKA $daysLeft hari lagi")
         }
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            LinearBar(doneCount / Content.nodes.size.toFloat(), C.good, Modifier.weight(1f), 12.dp)
-            Text("$doneCount/${Content.nodes.size}", color = C.muted, style = MaterialTheme.typography.labelLarge)
-        }
+        LinearBar(doneCount / Content.nodes.size.toFloat(), C.good, Modifier.fillMaxWidth(), 10.dp)
+        Text("$doneCount dari ${Content.nodes.size} langkah selesai", color = C.muted, style = MaterialTheme.typography.labelLarge)
     }
 }
 
 @Composable
-private fun HeaderChip(icon: String, text: String, color: Color) {
-    Row(
-        Modifier.clip(RoundedCornerShape(50)).background(color.copy(alpha = 0.14f)).padding(horizontal = 10.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(icon, fontSize = 16.sp)
-        Spacer(Modifier.width(4.dp))
-        Text(text, color = color, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.ExtraBold)
-    }
+private fun HeaderChip(text: String) {
+    Text(text, Modifier.clip(RoundedCornerShape(12.dp)).border(2.dp, C.line, RoundedCornerShape(12.dp))
+        .padding(horizontal = 8.dp, vertical = 4.dp), color = C.text, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
 }
 
 @Composable
@@ -164,7 +156,7 @@ private fun DayBanner(day: Int, steps: List<Step>) {
     val main = steps.first().subject.color
     Box(
         Modifier.padding(horizontal = 16.dp, vertical = 14.dp).fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
+            .clip(RoundedCornerShape(12.dp))
             .background(main)
             .padding(horizontal = 18.dp, vertical = 14.dp),
     ) {
@@ -220,9 +212,6 @@ private fun MapStop(store: Store, idx: Int, isCurrent: Boolean, isSelected: Bool
     val shake = remember { Animatable(0f) }
     val src = remember { MutableInteractionSource() }
     val pressed by src.collectIsPressedAsState()
-    val press by animateFloatAsState(if (pressed) 0.9f else if (isSelected) 1.08f else 1f, spring(Spring.DampingRatioMediumBouncy), label = "node")
-    val bob = if (isCurrent) rememberBob(5f) else 0f
-    val pulse = if (isCurrent) rememberPulse() else 0f
     // Quizzes are bigger stops than reading stops, so the rhythm of the map shows.
     val disc = if (node.isQuiz) NODE else NODE - 10.dp
 
@@ -234,8 +223,8 @@ private fun MapStop(store: Store, idx: Int, isCurrent: Boolean, isSelected: Bool
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         if (isCurrent) {
             Text(
-                "MULAI",
-                Modifier.offset { IntOffset(0, bob.roundToInt()) }
+                "Mulai",
+                Modifier
                     .clip(RoundedCornerShape(12.dp)).background(C.surface).border(2.dp, step.subject.color, RoundedCornerShape(12.dp))
                     .padding(horizontal = 12.dp, vertical = 4.dp),
                 color = step.subject.color, fontWeight = FontWeight.ExtraBold, style = MaterialTheme.typography.labelLarge,
@@ -246,16 +235,10 @@ private fun MapStop(store: Store, idx: Int, isCurrent: Boolean, isSelected: Bool
             Modifier.size(NODE + 18.dp).offset { IntOffset(shake.value.roundToInt(), 0) },
             contentAlignment = Alignment.Center,
         ) {
-            if (isCurrent) {
-                Canvas(Modifier.fillMaxSize()) {
-                    drawCircle(step.subject.color.copy(alpha = 0.45f * (1 - pulse)), radius = disc.toPx() / 2 * (1.05f + 0.25f * pulse), style = Stroke(6f))
-                }
-            }
-            // 3D button: darker disc underneath, face on top.
-            Box(Modifier.size(disc).offset(y = 6.dp).clip(CircleShape).background(darken(base)))
             Box(
-                Modifier.size(disc).scale(press).clip(CircleShape)
-                    .background(base)
+                Modifier.size(disc).clip(CircleShape)
+                    .background(if (pressed) darken(base, 0.9f) else base)
+                    .border(if (isCurrent || isSelected) 4.dp else 2.dp, if (isCurrent || isSelected) C.text else darken(base), CircleShape)
                     .clickable(src, null) {
                         if (unlocked) {
                             haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
@@ -291,50 +274,34 @@ fun starsFor(correct: Int, total: Int): Int = when {
     else -> 1
 }
 
+/** Bonus XP once every stop of a day is done. */
 @Composable
 private fun Chest(store: Store, day: Int) {
     val ready = store.dayDone(day)
     val claimed = remember(store.tick, store.xp) { store.chestClaimed(day) }
-    var reward by remember { mutableIntStateOf(0) }
-    val wobble = if (ready && !claimed) rememberBob(8f, 500) else 0f
-    Box(Modifier.fillMaxWidth().height(110.dp), contentAlignment = Alignment.Center) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Box(
-                Modifier.size(64.dp).rotate(wobble).clip(RoundedCornerShape(18.dp))
-                    .background(if (ready && !claimed) C.gold.copy(alpha = 0.25f) else C.surface)
-                    .clickable(enabled = ready && !claimed) { reward = store.claimChest(day) }
-                    .testTag("chest_$day"),
-                contentAlignment = Alignment.Center,
-            ) { Text(if (claimed) "📭" else "🎁", fontSize = 32.sp) }
-            Text(
-                when {
-                    claimed -> "Hadiah hari $day sudah diambil"
-                    ready -> "Ketuk untuk buka hadiah!"
-                    else -> "Selesaikan hari $day untuk membuka"
-                },
-                color = if (ready && !claimed) C.gold else C.muted, style = MaterialTheme.typography.labelMedium,
-            )
-        }
-        if (reward > 0) {
-            Confetti(reward)
-            AnimatedVisibility(true, enter = scaleIn(spring(Spring.DampingRatioHighBouncy)) + fadeIn()) {
-                Text("+$reward XP", color = C.gold, fontSize = 22.sp, fontWeight = FontWeight.Black,
-                    modifier = Modifier.offset(x = 70.dp))
+    Box(Modifier.fillMaxWidth().padding(horizontal = 40.dp, vertical = 16.dp), contentAlignment = Alignment.Center) {
+        if (ready && !claimed) {
+            BouncyButton("Ambil bonus hari $day (+25 XP)", Modifier.fillMaxWidth().testTag("chest_$day"), color = C.gold) {
+                store.claimChest(day)
             }
+        } else {
+            Text(
+                if (claimed) "Bonus hari $day sudah diambil (+25 XP)" else "Bonus hari $day: +25 XP setelah semua langkah hari ini selesai",
+                color = C.muted, style = MaterialTheme.typography.labelMedium, textAlign = TextAlign.Center,
+            )
         }
     }
 }
 
 @Composable
 private fun FinishFlag(store: Store) {
-    val all = Content.nodes.all { store.nodeDone(it) }
-    Column(Modifier.padding(top = 10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(if (all) "🏆" else "🏁", fontSize = 56.sp, modifier = Modifier.offset(y = rememberBob(4f).dp))
-        Text(
-            if (all) "Khatam! Siap TKA 2 November" else "TKA gelombang 2 · 2–5 November",
-            color = C.text, style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center,
-        )
-    }
+    val left = Content.nodes.count { !store.nodeDone(it) }
+    Text(
+        if (left == 0) "Semua langkah selesai. TKA gelombang 2: 2 sampai 5 November 2026."
+        else "Sisa $left langkah. TKA gelombang 2: 2 sampai 5 November 2026.",
+        Modifier.padding(horizontal = 24.dp, vertical = 10.dp),
+        color = C.text, style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center,
+    )
 }
 
 @Composable
@@ -345,7 +312,7 @@ private fun StepPopover(store: Store, idx: Int, onClose: () -> Unit, onStart: ()
     val nth = Content.nodes.filter { it.step.id == step.id && !it.isQuiz }.size
     Column(
         Modifier.padding(16.dp).fillMaxWidth()
-            .clip(RoundedCornerShape(26.dp))
+            .clip(RoundedCornerShape(12.dp))
             .background(step.subject.color)
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -372,10 +339,9 @@ private fun StepPopover(store: Store, idx: Int, onClose: () -> Unit, onStart: ()
         Spacer(Modifier.height(4.dp))
         BouncyButton(
             when {
-                node.isQuiz && done -> "ULANGI  (+XP lagi)"
-                node.isQuiz -> "MULAI LATIHAN"
-                done -> "BACA LAGI"
-                else -> "MULAI MEMBACA"
+                node.isQuiz && done -> "Ulangi"
+                done -> "Baca lagi"
+                else -> "Mulai"
             },
             Modifier.fillMaxWidth().testTag("start_step"),
             color = Color.White,

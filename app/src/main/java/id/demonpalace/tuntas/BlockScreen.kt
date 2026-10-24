@@ -53,13 +53,18 @@ fun BlockScreen(store: Store) {
     var blockerOn by remember { mutableStateOf(isBlockerEnabled(ctx)) }
     var usageOn by remember { mutableStateOf(hasUsageAccess(ctx)) }
     var usage by remember { mutableStateOf(emptyMap<String, Int>()) }
+    var restricted by remember { mutableStateOf(restrictedSettingsBlocked(ctx)) }
+    fun recheck() {
+        blockerOn = isBlockerEnabled(ctx)
+        usageOn = hasUsageAccess(ctx)
+        restricted = restrictedSettingsBlocked(ctx)
+        usage = todayUsageMinutes(ctx)
+    }
     var apps by remember { mutableStateOf<List<AppInfo>?>(null) }
     var query by remember { mutableStateOf("") }
 
     LifecycleResumeEffect(Unit) {
-        blockerOn = isBlockerEnabled(ctx)
-        usageOn = hasUsageAccess(ctx)
-        usage = todayUsageMinutes(ctx)
+        recheck()
         onPauseOrDispose { }
     }
     LaunchedEffect(Unit) { apps = withContext(Dispatchers.Default) { launchableApps(ctx) } }
@@ -69,17 +74,20 @@ fun BlockScreen(store: Store) {
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         Text("Blokir Distraksi", color = C.text, style = MaterialTheme.typography.headlineLarge)
-        Text("Biar gak ketagihan main HP: pilih aplikasi yang bikin lupa waktu. Saat Sesi Harian berjalan, SEMUA aplikasi lain ditutup otomatis.",
+        Text("Pilih aplikasi yang ditutup otomatis di luar sesi. Saat Sesi Harian berjalan, semua aplikasi lain ditutup.",
             color = C.muted, style = MaterialTheme.typography.bodyLarge)
 
+        if ((!blockerOn || !usageOn) && android.os.Build.VERSION.SDK_INT >= 33) {
+            RestrictedCard(detected = restricted, onOpen = { openAppInfo(ctx) }, onRecheck = { recheck() })
+        }
         PermissionCard(
             "Pemblokir (Aksesibilitas)", blockerOn,
-            "Wajib. Buka Setelan → Aksesibilitas → Aplikasi terinstal → \"Jalur TKA: Pemblokir Distraksi\" → Aktifkan.",
+            "Wajib. Buka Setelan, Aksesibilitas, Aplikasi terinstal, \"Jalur TKA: Pemblokir Distraksi\", lalu Aktifkan.",
             "blocker_perm",
         ) { ctx.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
         PermissionCard(
             "Akses penggunaan", usageOn,
-            "Untuk batas harian dan statistik waktu layar. Pilih Jalur TKA → Izinkan.",
+            "Untuk batas harian dan statistik waktu layar. Pilih Jalur TKA, lalu Izinkan.",
             "usage_perm",
         ) { ctx.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
 
@@ -91,7 +99,7 @@ fun BlockScreen(store: Store) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
                         Text("Blokir terus", color = C.text, style = MaterialTheme.typography.titleMedium)
-                        Text("Aplikasi pilihan selalu ditutup, bahkan di luar sesi. Cocok sampai TKA selesai 5 Nov.", color = C.muted, style = MaterialTheme.typography.bodyMedium)
+                        Text("Aplikasi pilihan selalu ditutup, juga di luar sesi, sampai fitur ini dimatikan.", color = C.muted, style = MaterialTheme.typography.bodyMedium)
                     }
                     Switch(store.alwaysBlock, { store.updateAlwaysBlock(it) }, Modifier.testTag("always_block"),
                         colors = SwitchDefaults.colors(checkedTrackColor = C.bad))
@@ -134,11 +142,11 @@ fun BlockScreen(store: Store) {
             }
         }
 
-        SectionTitle("Tambahan dari HP-mu")
+        SectionTitle("Pengaturan bawaan Android")
         Card(Modifier.fillMaxWidth()) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text("Android punya Kesehatan Digital (Digital Wellbeing):", color = C.text, style = MaterialTheme.typography.titleMedium)
-                Text("• Setelan → Kesehatan Digital → Mode Fokus: pilih aplikasi yang dijeda.", color = C.muted)
+                Text("• Setelan, Kesehatan Digital, Mode Fokus: pilih aplikasi yang dijeda.", color = C.muted)
                 Text("• Timer aplikasi: batasi TikTok/IG per hari.", color = C.muted)
                 Text("• Mode Waktu Tidur: layar abu-abu dan notifikasi senyap mulai 21.00.", color = C.muted)
                 Text("• Matikan notifikasi aplikasi medsos, dan taruh HP di ruangan lain saat tidur.", color = C.muted)
@@ -147,17 +155,51 @@ fun BlockScreen(store: Store) {
     }
 }
 
+/**
+ * Sideloaded APKs on Android 13+ get "Setelan terbatas": the Aksesibilitas and Akses penggunaan
+ * toggles stay grey until the user allows restricted settings in App info.
+ */
+@Composable
+private fun RestrictedCard(detected: Boolean, onOpen: () -> Unit, onRecheck: () -> Unit) {
+    Column(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(C.surface)
+            .border(2.dp, if (detected) C.gold else C.line, RoundedCornerShape(12.dp)).padding(16.dp).testTag("restricted_card"),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(if (detected) "Izin masih dibatasi Android (Setelan terbatas)" else "Tombol izin abu-abu?",
+            color = C.text, style = MaterialTheme.typography.titleMedium)
+        Text("Aplikasi yang dipasang dari file APK dibatasi oleh Android 13 ke atas. Tombol Aksesibilitas dan Akses penggunaan " +
+            "tidak bisa dinyalakan dan tertulis \"Dikontrol oleh Setelan Terbatas\". Cara membukanya:",
+            color = C.muted, style = MaterialTheme.typography.bodyMedium)
+        listOf(
+            "Ketuk salah satu kartu izin di bawah sekali, lalu tutup dialog \"Aplikasi tidak diberi akses\". Langkah ini membuat menu di langkah 3 muncul.",
+            "Ketuk Buka Info aplikasi.",
+            "Ketuk titik tiga di kanan atas, pilih \"Izinkan setelan terbatas\", lalu konfirmasi dengan PIN atau sidik jari.",
+            "Kembali ke sini, ketuk Sudah, cek lagi, lalu nyalakan Pemblokir dan Akses penggunaan.",
+        ).forEachIndexed { i, t ->
+            Row {
+                Text("${i + 1}.", color = C.text, fontWeight = FontWeight.Bold, modifier = Modifier.width(22.dp))
+                Text(t, color = C.text, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+            }
+        }
+        Text("Di HP Xiaomi, jika titik tiga tidak ada: Setelan, Aplikasi, Kelola aplikasi, Jalur TKA, lalu cari titik tiga atau menu \"Izinkan setelan terbatas\" di halaman itu.",
+            color = C.muted, style = MaterialTheme.typography.bodySmall)
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            BouncyButton("Buka Info aplikasi", Modifier.weight(1f).testTag("open_app_info"), color = C.gold, onClick = onOpen)
+            BouncyButton("Sudah, cek lagi", Modifier.weight(1f).testTag("recheck_perm"), secondary = true, onClick = onRecheck)
+        }
+    }
+}
+
 @Composable
 private fun PermissionCard(title: String, on: Boolean, how: String, tag: String, onFix: () -> Unit) {
     Row(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp))
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
             .background(if (on) C.good.copy(alpha = 0.12f) else C.gold.copy(alpha = 0.12f))
-            .border(2.dp, if (on) C.good.copy(alpha = 0.5f) else C.gold.copy(alpha = 0.6f), RoundedCornerShape(20.dp))
+            .border(2.dp, if (on) C.good.copy(alpha = 0.5f) else C.gold.copy(alpha = 0.6f), RoundedCornerShape(12.dp))
             .clickable(enabled = !on, onClick = onFix).testTag(tag).padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(if (on) "✅" else "⚠️", fontSize = 26.sp)
-        Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             Text(title + if (on) " aktif" else " belum aktif", color = C.text, style = MaterialTheme.typography.titleMedium)
             if (!on) Text("$how Ketuk di sini.", color = C.muted, style = MaterialTheme.typography.bodyMedium)
@@ -169,7 +211,7 @@ private fun PermissionCard(title: String, on: Boolean, how: String, tag: String,
 private fun ScreenTimeCard(store: Store, usage: Map<String, Int>, usageOn: Boolean) {
     val used = store.blocked.sumOf { usage[it] ?: 0 }
     val limit = store.dailyLimitMin
-    Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(C.surface).padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(C.surface).padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
         val frac = if (limit > 0) used / limit.toFloat() else 0f
         val col = when { limit == 0 -> C.muted; frac >= 1f -> C.bad; frac >= 0.7f -> C.gold; else -> C.good }
         ProgressRing(frac, col, size = 84.dp, stroke = 9.dp) {
@@ -182,12 +224,12 @@ private fun ScreenTimeCard(store: Store, usage: Map<String, Int>, usageOn: Boole
                 when {
                     !usageOn -> "Izinkan Akses penggunaan dulu"
                     limit == 0 -> "$used menit (tanpa batas)"
-                    used >= limit -> "Batas $limit menit habis! Diblokir sampai besok."
+                    used >= limit -> "Batas $limit menit habis. Diblokir sampai besok."
                     else -> "${limit - used} menit tersisa dari $limit"
                 },
                 color = C.text, style = MaterialTheme.typography.titleMedium,
             )
-            Text("🚫 Diblokir ${store.blockedHits()}x hari ini", color = C.bad, style = MaterialTheme.typography.bodyMedium)
+            Text("Diblokir ${store.blockedHits()} kali hari ini", color = C.bad, style = MaterialTheme.typography.bodyMedium)
         }
     }
 }
@@ -196,7 +238,7 @@ private fun ScreenTimeCard(store: Store, usage: Map<String, Int>, usageOn: Boole
 private fun AppRow(app: AppInfo, blocked: Boolean, minutes: Int, onToggle: () -> Unit) {
     val bg by animateColorAsState(if (blocked) C.bad.copy(alpha = 0.12f) else C.surface, label = "app")
     Row(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(bg).clickable(onClick = onToggle).padding(horizontal = 14.dp, vertical = 10.dp),
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(bg).clickable(onClick = onToggle).padding(horizontal = 14.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(Modifier.size(36.dp).clip(CircleShape).background(if (blocked) C.bad else C.surface2), contentAlignment = Alignment.Center) {

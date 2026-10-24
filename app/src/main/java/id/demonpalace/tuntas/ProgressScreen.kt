@@ -11,6 +11,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -85,7 +86,7 @@ fun ProgressScreen(store: Store, onRetry: () -> Unit, onOpenStep: (Int) -> Unit)
 @Composable
 private fun LevelCard(store: Store) {
     Row(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(26.dp)).background(C.violet).padding(20.dp),
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(C.violet).padding(20.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         ProgressRing(store.levelProgress, Color.White, size = 96.dp, stroke = 10.dp) {
@@ -98,7 +99,7 @@ private fun LevelCard(store: Store) {
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             AnimatedNumber(store.xp, MaterialTheme.typography.headlineMedium, Color.White, " XP")
             Text("${100 - store.xp % 100} XP lagi ke level ${store.level + 1}", color = Color.White.copy(alpha = 0.9f))
-            Text("🔥 Streak ${store.streak} hari", color = Color.White, fontWeight = FontWeight.Bold)
+            Text("${store.streak} hari berturut-turut", color = Color.White, fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -111,13 +112,13 @@ private fun CountdownCard(store: Store) {
     val materialSteps = Content.steps.filter { it.day <= 6 }
     val materialDone = materialSteps.count { it.id in store.done }
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        Column(Modifier.weight(1f).clip(RoundedCornerShape(22.dp)).background(C.surface).padding(16.dp)) {
+        Column(Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).background(C.surface).padding(16.dp)) {
             Text("TKA GELOMBANG 2", color = C.muted, style = MaterialTheme.typography.labelMedium)
             AnimatedNumber(toExam.toInt(), MaterialTheme.typography.headlineLarge, C.good, " hari")
-            Text("2–5 November 2026", color = C.muted, style = MaterialTheme.typography.bodyMedium)
+            Text("2 sampai 5 November 2026", color = C.muted, style = MaterialTheme.typography.bodyMedium)
         }
-        Column(Modifier.weight(1f).clip(RoundedCornerShape(22.dp)).background(C.surface).padding(16.dp)) {
-            Text("MATERI KHATAM", color = C.muted, style = MaterialTheme.typography.labelMedium)
+        Column(Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).background(C.surface).padding(16.dp)) {
+            Text("MATERI SELESAI", color = C.muted, style = MaterialTheme.typography.labelMedium)
             AnimatedNumber(materialDone, MaterialTheme.typography.headlineLarge, C.pink, "/${materialSteps.size}")
             Text(if (toDeadline > 0) "target sebelum 30 Okt ($toDeadline hari)" else "batas 30 Okt", color = C.muted, style = MaterialTheme.typography.bodyMedium)
         }
@@ -127,14 +128,14 @@ private fun CountdownCard(store: Store) {
 @Composable
 private fun SubjectRings(store: Store, onOpenStep: (Int) -> Unit) {
     var open by remember { mutableStateOf<Subject?>(null) }
-    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(C.surface).padding(14.dp).animateContentSize()) {
+    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(C.surface).padding(14.dp).animateContentSize()) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             listOf(Subject.MAT, Subject.FIS, Subject.BIN, Subject.BIG).forEach { s ->
                 val steps = Content.steps.filter { it.subject == s }
                 val done = steps.count { it.id in store.done }
                 val on = open == s
                 Column(
-                    Modifier.clip(RoundedCornerShape(16.dp)).background(if (on) s.color.copy(alpha = 0.15f) else Color.Transparent)
+                    Modifier.clip(RoundedCornerShape(12.dp)).background(if (on) s.color.copy(alpha = 0.15f) else Color.Transparent)
                         .clickable { open = if (on) null else s }.testTag("ring_${s.name}").padding(6.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
@@ -155,11 +156,12 @@ private fun SubjectRings(store: Store, onOpenStep: (Int) -> Unit) {
                     val done = st.id in store.done
                     val unlocked = store.isUnlocked(idx)
                     Row(
-                        Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(C.surface2)
+                        Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(C.surface2)
                             .clickable(enabled = unlocked) { onOpenStep(idx) }.padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(if (done) "✅" else if (unlocked) "▶️" else "🔒", fontSize = 18.sp)
+                        Text(if (done) "Selesai" else if (unlocked) "Terbuka" else "Terkunci",
+                            color = if (done) C.good else C.muted, style = MaterialTheme.typography.labelMedium, modifier = Modifier.width(64.dp))
                         Spacer(Modifier.width(10.dp))
                         Column(Modifier.weight(1f)) {
                             Text(st.title, color = C.text, style = MaterialTheme.typography.titleMedium)
@@ -185,7 +187,7 @@ private fun ActivityChart(store: Store) {
     var sel by remember { mutableStateOf(days.indexOf(LocalDate.now()).takeIf { it >= 0 } ?: 0) }
     val grow = remember { Animatable(0f) }
     LaunchedEffect(Unit) { grow.animateTo(1f, tween(900, easing = FastOutSlowInEasing)) }
-    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(C.surface).padding(16.dp)) {
+    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(C.surface).padding(16.dp)) {
         Text(
             "${days[sel].dayOfMonth} ${if (days[sel].monthValue == 10) "Okt" else "Nov"}: ${answered[sel]} soal dijawab · ${minutes[sel] / 60} j ${minutes[sel] % 60} m fokus",
             color = C.text, style = MaterialTheme.typography.titleMedium,
@@ -217,33 +219,21 @@ private fun ActivityChart(store: Store) {
 
 @Composable
 private fun Badges(store: Store) {
-    var info by remember { mutableStateOf<Badge?>(null) }
-    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(C.surface).padding(14.dp).animateContentSize()) {
-        Badge.entries.chunked(4).forEach { row ->
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                row.forEach { b ->
-                    val got = b.name in store.badges
-                    val s = remember { Animatable(0.6f) }
-                    LaunchedEffect(got) { s.animateTo(1f, androidx.compose.animation.core.spring(0.4f)) }
-                    Column(
-                        Modifier.width(76.dp).clip(RoundedCornerShape(16.dp)).clickable { info = b }.padding(6.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Box(
-                            Modifier.size(54.dp).scale(s.value).clip(RoundedCornerShape(50))
-                                .background(if (got) C.gold.copy(alpha = 0.25f) else C.surface2)
-                                .border(2.dp, if (got) C.gold else C.line, RoundedCornerShape(50)),
-                            contentAlignment = Alignment.Center,
-                        ) { Text(if (got) b.emoji else "🔒", fontSize = 24.sp) }
-                        Text(b.title, color = if (got) C.text else C.muted, style = MaterialTheme.typography.labelMedium, fontSize = 11.sp,
-                            textAlign = TextAlign.Center, maxLines = 2)
-                    }
+    Column(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(C.surface).border(2.dp, C.line, RoundedCornerShape(12.dp)).padding(14.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text("${Badge.entries.count { it.name in store.badges }} dari ${Badge.entries.size} lencana", color = C.muted, style = MaterialTheme.typography.labelMedium)
+        Badge.entries.forEach { b ->
+            val got = b.name in store.badges
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.size(12.dp).clip(CircleShape).background(if (got) C.gold else C.line))
+                Spacer(Modifier.width(10.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(b.title, color = if (got) C.text else C.muted, style = MaterialTheme.typography.titleSmall)
+                    Text(b.desc, color = C.muted, style = MaterialTheme.typography.labelMedium)
                 }
             }
-        }
-        info?.let { b ->
-            Text("${b.emoji} ${b.title}: ${b.desc}" + if (b.name in store.badges) " ✓ didapat" else "",
-                color = C.gold, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 8.dp))
         }
     }
 }
@@ -251,23 +241,23 @@ private fun Badges(store: Store) {
 @Composable
 private fun WrongCard(store: Store, onRetry: () -> Unit) {
     val n = store.wrong.size
-    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(C.surface).padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(C.surface).padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             AnimatedNumber(n, MaterialTheme.typography.headlineLarge, if (n == 0) C.good else C.bad)
             Spacer(Modifier.width(10.dp))
-            Text(if (n == 0) "soal salah. Bersih! 🎉" else "soal masih salah. Jawab benar sekali untuk menghapusnya.", color = C.muted)
+            Text(if (n == 0) "Belum ada soal yang salah." else "soal masih salah. Soal hilang dari daftar setelah dijawab benar.", color = C.muted)
         }
         store.wrong.take(4).mapNotNull { Content.allQuestions[it] }.forEach { (st, q) ->
-            Text("• ${st.subject.emoji} ${q.text.take(70)}…", color = C.text, style = MaterialTheme.typography.bodyMedium)
+            Text("• ${st.subject.label}: ${q.text.take(70)}…", color = C.text, style = MaterialTheme.typography.bodyMedium)
         }
-        BouncyButton("ULANG SOAL SALAH", Modifier.fillMaxWidth().testTag("retry_wrong"), enabled = n > 0, onClick = onRetry)
+        BouncyButton("Ulang soal salah", Modifier.fillMaxWidth().testTag("retry_wrong"), enabled = n > 0, onClick = onRetry)
     }
 }
 
 @Composable
 private fun PhotoStrip(store: Store) {
     if (store.photos.isEmpty()) {
-        Text("Belum ada. Foto akan muncul di sini setelah kamu menuntaskan Sesi Harian di tab Fokus.", color = C.muted)
+        Text("Belum ada ringkasan. Ringkasan tersimpan setelah Sesi Harian di tab Fokus selesai.", color = C.muted)
         return
     }
     Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -275,7 +265,7 @@ private fun PhotoStrip(store: Store) {
             if (path.endsWith(".txt")) {
                 val txt = remember(path) { runCatching { File(path).readText() }.getOrDefault("") }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(txt, Modifier.size(110.dp, 140.dp).clip(RoundedCornerShape(16.dp)).background(C.surface2).padding(10.dp),
+                    Text(txt, Modifier.size(110.dp, 140.dp).clip(RoundedCornerShape(12.dp)).background(C.surface2).padding(10.dp),
                         color = C.text, style = MaterialTheme.typography.labelMedium, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                     Text(File(path).nameWithoutExtension.removePrefix("ringkasan_").take(10), color = C.muted, style = MaterialTheme.typography.labelMedium)
                 }
@@ -289,9 +279,9 @@ private fun PhotoStrip(store: Store) {
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 if (bmp != null) {
-                    Image(bmp, "Foto ringkasan", Modifier.size(110.dp, 140.dp).clip(RoundedCornerShape(16.dp)), contentScale = ContentScale.Crop)
+                    Image(bmp, "Foto ringkasan", Modifier.size(110.dp, 140.dp).clip(RoundedCornerShape(12.dp)), contentScale = ContentScale.Crop)
                 } else {
-                    Box(Modifier.size(110.dp, 140.dp).clip(RoundedCornerShape(16.dp)).background(C.surface2), contentAlignment = Alignment.Center) { Text("📷") }
+                    Box(Modifier.size(110.dp, 140.dp).clip(RoundedCornerShape(12.dp)).background(C.surface2), contentAlignment = Alignment.Center) { Text("Foto", color = C.muted) }
                 }
                 Text(File(path).nameWithoutExtension.removePrefix("ringkasan_").take(10), color = C.muted, style = MaterialTheme.typography.labelMedium)
             }
@@ -302,16 +292,16 @@ private fun PhotoStrip(store: Store) {
 @Composable
 private fun Sources() {
     val ctx = LocalContext.current
-    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(C.surface).padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(C.surface).padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text("Materi disusun dari kisi-kisi resmi TKA SMA 2026 (Pusmendik Kemendikdasmen) sebagaimana dikutip media berikut. Ketuk untuk membuka.",
             color = C.muted, style = MaterialTheme.typography.bodyMedium)
         Content.sources.forEach { s ->
             Column(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(C.surface2)
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(C.surface2)
                     .clickable { runCatching { ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(s.url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } }
                     .padding(12.dp),
             ) {
-                Text("🔗 ${s.title}", color = C.text, style = MaterialTheme.typography.titleMedium)
+                Text(s.title, color = C.text, style = MaterialTheme.typography.titleMedium)
                 Text(s.note, color = C.muted, style = MaterialTheme.typography.bodyMedium)
             }
         }
@@ -325,10 +315,10 @@ private fun ResetButton(store: Store) {
         if (!confirm) {
             Text("Reset progres", color = C.muted, modifier = Modifier.clip(RoundedCornerShape(12.dp)).clickable { confirm = true }.padding(10.dp))
         } else {
-            Text("Yakin? Semua progres, XP, dan lencana akan hilang.", color = C.bad)
+            Text("Semua progres, XP, dan lencana akan dihapus.", color = C.bad)
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.padding(top = 8.dp)) {
-                BouncyButton("Batal", secondary = true) { confirm = false }
-                BouncyButton("Ya, reset", color = C.bad) { store.resetAll(); confirm = false }
+                BouncyButton("Batal", Modifier.width(140.dp), secondary = true) { confirm = false }
+                BouncyButton("Reset", Modifier.width(140.dp), color = C.bad) { store.resetAll(); confirm = false }
             }
         }
     }

@@ -95,8 +95,8 @@ fun LibraryScreen(store: Store, onOpenBook: (Subject) -> Unit, onRead: (stepInde
             marks.forEach { (s, at) ->
                 val step = Content.steps[at.first]
                 Row(
-                    Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(C.surface)
-                        .border(2.dp, C.line, RoundedCornerShape(18.dp))
+                    Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(C.surface)
+                        .border(2.dp, C.line, RoundedCornerShape(12.dp))
                         .clickable { onRead(at.first, at.second) }.testTag("continue_${s.name}")
                         .padding(14.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -119,19 +119,18 @@ fun LibraryScreen(store: Store, onOpenBook: (Subject) -> Unit, onRead: (stepInde
 private fun BookCover(store: Store, s: Subject, modifier: Modifier, onClick: () -> Unit) {
     val src = remember { MutableInteractionSource() }
     val pressed by src.collectIsPressedAsState()
-    val press by animateFloatAsState(if (pressed) 0.95f else 1f, spring(Spring.DampingRatioMediumBouncy), label = "cover")
     val sub = subCount(s)
     val read = readCount(store, s)
-    Box(modifier.scale(press).aspectRatio(0.72f)) {
+    Box(modifier.aspectRatio(0.72f)) {
         // Pages peeking out behind the cover.
         Box(Modifier.fillMaxSize().padding(start = 8.dp, top = 6.dp).clip(RoundedCornerShape(6.dp, 16.dp, 16.dp, 6.dp)).background(Color(0xFFF1EADB)))
         Row(
             Modifier.fillMaxSize().padding(end = 6.dp, bottom = 6.dp)
                 .clip(RoundedCornerShape(6.dp, 16.dp, 16.dp, 6.dp))
-                .background(Brush.verticalGradient(listOf(s.color, darken(s.color))))
+                .background(if (pressed) darken(s.color, 0.9f) else s.color)
                 .clickable(src, null, onClick = onClick).testTag("book_${s.name}"),
         ) {
-            Box(Modifier.width(12.dp).fillMaxHeight().background(Color.Black.copy(alpha = 0.18f)))
+            Box(Modifier.width(12.dp).fillMaxHeight().background(darken(s.color)))
             Column(Modifier.weight(1f).padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Box(
                     Modifier.size(48.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.22f)),
@@ -153,7 +152,7 @@ fun BookScreen(store: Store, subject: Subject, onBack: () -> Unit, onRead: (step
     val chapters = bookChapters(subject)
     Column(Modifier.fillMaxSize().background(C.bg).statusBarsPadding().navigationBarsPadding()) {
         Box(
-            Modifier.fillMaxWidth().background(Brush.verticalGradient(listOf(subject.color, darken(subject.color))))
+            Modifier.fillMaxWidth().background(subject.color)
                 .padding(horizontal = 8.dp, vertical = 10.dp),
         ) {
             Column {
@@ -178,8 +177,8 @@ fun BookScreen(store: Store, subject: Subject, onBack: () -> Unit, onRead: (step
             chapters.forEachIndexed { n, step ->
                 val idx = Content.steps.indexOf(step)
                 Column(
-                    Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(C.surface)
-                        .border(2.dp, C.line, RoundedCornerShape(20.dp)).padding(14.dp),
+                    Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(C.surface)
+                        .border(2.dp, C.line, RoundedCornerShape(12.dp)).padding(14.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     Row(

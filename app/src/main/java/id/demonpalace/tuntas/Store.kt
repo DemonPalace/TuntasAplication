@@ -262,13 +262,14 @@ class Store private constructor(private val prefs: SharedPreferences) {
     }
 }
 
-enum class Badge(val emoji: String, val title: String, val desc: String, val check: (Store) -> Boolean) {
-    FIRST_STEP("🚀", "Langkah Pertama", "Selesaikan 1 langkah", { it.done.isNotEmpty() }),
-    DAY_ONE("🌅", "Hari 1 Tuntas", "Selesaikan semua langkah hari 1", { s -> s.dayDone(1) }),
-    MATH("📐", "Jago Hitung", "Selesaikan semua langkah Matematika", { s -> Content.steps.filter { it.subject == Subject.MAT }.all { it.id in s.done } }),
-    PHYSICS("⚡", "Fisikawan", "Selesaikan semua langkah Fisika", { s -> Content.steps.filter { it.subject == Subject.FIS }.all { it.id in s.done } }),
-    PERFECT("💯", "Sempurna", "Benar semua di satu kuis", { s -> Content.steps.any { st -> st.questions.isNotEmpty() && s.bestScore(st.id) == st.questions.size } }),
-    FOCUS("🧘", "Anti HP", "Tuntaskan 1 Sesi Harian penuh", { it.photos.isNotEmpty() }),
-    LEVEL5("👑", "Level 5", "Kumpulkan 400 XP", { it.xp >= 400 }),
-    FINISH("🏆", "Khatam!", "Selesaikan seluruh langkah", { s -> Content.steps.all { it.id in s.done } }),
+enum class Badge(val title: String, val desc: String, val check: (Store) -> Boolean) {
+    FIRST_STEP("Langkah pertama selesai", "1 langkah di jalur selesai", { it.done.isNotEmpty() }),
+    DAY_ONE("Hari 1 selesai", "Semua langkah hari 1 selesai", { s -> s.dayDone(1) }),
+    STREAK7("7 hari berturut-turut", "Belajar 7 hari tanpa putus", { it.streak >= 7 }),
+    MATH("Matematika selesai", "Semua bab Matematika selesai", { s -> Content.steps.filter { it.subject == Subject.MAT }.all { it.id in s.done } }),
+    PHYSICS("Fisika selesai", "Semua bab Fisika selesai", { s -> Content.steps.filter { it.subject == Subject.FIS }.all { it.id in s.done } }),
+    PERFECT("Kuis 100%", "Semua soal benar di satu kuis", { s -> Content.steps.any { st -> st.questions.isNotEmpty() && s.bestScore(st.id) == st.questions.size } }),
+    FOCUS("Sesi harian tuntas", "1 Sesi Harian selesai dengan ringkasan", { it.photos.isNotEmpty() }),
+    LEVEL5("Level 5", "400 XP terkumpul", { it.xp >= 400 }),
+    FINISH("Semua langkah selesai", "Seluruh jalur selesai", { s -> Content.steps.all { it.id in s.done } }),
 }
