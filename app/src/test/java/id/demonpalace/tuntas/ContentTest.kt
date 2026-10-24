@@ -17,8 +17,23 @@ class ContentTest {
 
     @Test fun answersPointAtAnOption() {
         Content.steps.flatMap { it.questions }.forEach { q ->
-            assertTrue("${q.id} answer out of range", q.answer in q.options.indices)
-            assertTrue("${q.id} has too few options", q.options.size >= 4)
+            when {
+                q.isTable -> {
+                    assertTrue("${q.id} needs at least 2 columns", q.options.size >= 2)
+                    assertEquals("${q.id} rows/keys mismatch", q.rows.size, q.rowKeys.size)
+                    assertTrue("${q.id} row key out of range", q.rowKeys.all { it in q.options.indices })
+                }
+                q.isMulti -> {
+                    assertTrue("${q.id} has too few options", q.options.size >= 4)
+                    val keys = q.multi!!
+                    assertTrue("${q.id} multi needs 2+ keys", keys.size >= 2)
+                    assertTrue("${q.id} multi key out of range", keys.all { it in q.options.indices })
+                }
+                else -> {
+                    assertTrue("${q.id} answer out of range", q.answer in q.options.indices)
+                    assertTrue("${q.id} has too few options", q.options.size >= 4)
+                }
+            }
             assertEquals("${q.id} has duplicate options", q.options.size, q.options.toSet().size)
             assertTrue("${q.id} missing explanation", q.explain.isNotBlank())
         }
@@ -26,15 +41,39 @@ class ContentTest {
 
     @Test fun everyLessonHasCardsAndPracticeStepsHaveQuestions() {
         Content.steps.forEach { s ->
-            assertTrue("${s.id} has no cards", s.sections.isNotEmpty())
+            if (!s.isPractice) assertTrue("${s.id} has no cards", s.sections.isNotEmpty())
             if (!s.isReview) assertTrue("${s.id} has no questions", s.questions.isNotEmpty())
         }
     }
 
     @Test fun materialFinishesBefore30OctAndDaysAreOrdered() {
-        val material = Content.steps.filter { it.subject != Subject.MIX && !it.title.startsWith("Tryout") }
+        val material = Content.steps.filter { it.subject != Subject.MIX && !it.title.startsWith("Tryout") && !it.isPractice }
         assertTrue(material.all { it.day <= 6 })
         assertEquals(Content.steps.map { it.day }, Content.steps.map { it.day }.sorted())
+    }
+
+    @Test fun mapHasOneStopPerSubChapterAndUniqueIds() {
+        val ids = Content.nodes.map { it.id }
+        assertEquals(ids.size, ids.toSet().size)
+        assertEquals(Content.steps.sumOf { it.sections.size } + Content.steps.count { it.questions.isNotEmpty() }, Content.nodes.size)
+        assertTrue("map too short: ${Content.nodes.size}", Content.nodes.size >= 100)
+    }
+
+    @Test fun everySectionReadsLikeABook() {
+        Content.books.values.flatten().forEach { s ->
+            s.sections.forEach { sec ->
+                assertTrue("${s.id}/${sec.title} has no prose", sec.explain.isNotEmpty())
+                assertTrue("${s.id}/${sec.title} has no summary", sec.points.isNotEmpty())
+            }
+        }
+    }
+
+    @Test fun bankIsImportedAndFiguresExist() {
+        assertTrue("only ${Content.questionCount} questions", Content.questionCount >= 230)
+        val assets = java.io.File("src/main/assets")
+        Content.allQuestions.values.mapNotNull { it.second.image }.forEach {
+            assertTrue("missing figure $it", java.io.File(assets, it).exists())
+        }
     }
 
     @Test fun starsScale() {

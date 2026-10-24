@@ -10,8 +10,27 @@ enum class Subject(val label: String, val color: Color, val emoji: String) {
     MIX("Tryout & Review", Color(0xFFCE82FF), "🎯"),
 }
 
-data class Section(val title: String, val points: List<String>)
+/** A worked example in a lesson: the problem, the solution steps, and the final answer. */
+data class Example(val problem: String, val steps: List<String>, val answer: String)
 
+/**
+ * One sub-chapter of the book. [points] is the short summary the reader ticks off;
+ * the other parts are the textbook body.
+ */
+data class Section(
+    val title: String,
+    val points: List<String>,
+    val explain: List<String> = emptyList(),
+    val formulas: List<String> = emptyList(),
+    val examples: List<Example> = emptyList(),
+    val pitfalls: List<String> = emptyList(),
+)
+
+/**
+ * A question in one of the three TKA formats: single answer ([answer]), pilihan ganda kompleks
+ * with several correct options ([multi]), or a category table where each row in [rows] takes one
+ * of the [options] as its column, keyed by [rowKeys].
+ */
 data class Question(
     val id: String,
     val text: String,
@@ -19,7 +38,22 @@ data class Question(
     val answer: Int,
     val explain: String,
     val passage: String? = null,
-)
+    val multi: Set<Int>? = null,
+    val rows: List<String> = emptyList(),
+    val rowKeys: List<Int> = emptyList(),
+    /** Figure bundled under assets/, e.g. "soal/kp80_trapesium.jpg". */
+    val image: String? = null,
+) {
+    val isTable get() = rows.isNotEmpty()
+    val isMulti get() = multi != null
+
+    /** Letters of the correct options, for feedback text. */
+    fun keyText(): String = when {
+        isTable -> rows.indices.joinToString("; ") { "${rows[it]} → ${options[rowKeys[it]]}" }
+        isMulti -> multi!!.sorted().joinToString(", ") { "${'A' + it}" }
+        else -> "${'A' + answer}. ${options[answer]}"
+    }
+}
 
 data class Step(
     val id: String,
@@ -31,7 +65,14 @@ data class Step(
     val sections: List<Section>,
     val questions: List<Question>,
     val isReview: Boolean = false,
+    /** Practice packs from the question bank: no reading, just a quiz node on the map. */
+    val isPractice: Boolean = false,
 )
+
+/** One stop on the map: a sub-chapter to read ([section] ≥ 0) or the step's quiz ([section] = -1). */
+data class PathNode(val id: String, val step: Step, val section: Int) {
+    val isQuiz get() = section < 0
+}
 
 data class Source(val title: String, val url: String, val note: String)
 
@@ -84,7 +125,7 @@ object Content {
         Source("Laman resmi TKA Kemendikdasmen", "https://tka.kemendikdasmen.go.id", "Cek pengumuman terbaru di sini."),
     )
 
-    val steps: List<Step> = listOf(
+    private val rawSteps: List<Step> = listOf(
         // ================= HARI 1 · Sab 24 Okt =================
         Step("mat1", 1, "Sab, 24 Okt", Subject.MAT, "Bilangan & Aljabar",
             "Elemen Bilangan dan Aljabar: persen, perbandingan, pangkat, logaritma, persamaan linear & kuadrat, fungsi.",
@@ -401,6 +442,28 @@ object Content {
             ),
         ),
         // ================= HARI 5 · Rab 28 Okt =================
+        Step("mat4", 4, "Sel, 27 Okt", Subject.MAT, "Fungsi, Barisan & Deret",
+            "Elemen Aljabar: domain-range, fungsi kuadrat, komposisi & invers, barisan-deret aritmetika & geometri, pertumbuhan, peluruhan, bunga tunggal & majemuk.",
+            emptyList(),
+            listOf(
+                Question("m4a", "Diketahui f(x) = 2x + 3 dan g(x) = x − 1. Nilai (f∘g)(4) adalah...",
+                    listOf("7", "8", "9", "10", "11"), 2, "g(4) = 3, lalu f(3) = 6 + 3 = 9."),
+                Question("m4b", "Invers dari f(x) = (x + 5)/2 adalah...",
+                    listOf("f⁻¹(x) = 2x − 5", "f⁻¹(x) = 2x + 5", "f⁻¹(x) = (x − 5)/2", "f⁻¹(x) = 5 − 2x", "f⁻¹(x) = x/2 − 5"), 0,
+                    "y = (x + 5)/2 → 2y = x + 5 → x = 2y − 5. Cek: f(1) = 3 dan f⁻¹(3) = 1."),
+                Question("m4c", "Suku ke-2 barisan aritmetika adalah 7 dan suku ke-5 adalah 16. Suku ke-10 adalah...",
+                    listOf("28", "30", "31", "34", "37"), 2, "3b = 16 − 7 = 9 → b = 3, a = 4. U₁₀ = 4 + 9 × 3 = 31."),
+                Question("m4d", "Uang Rp4.000.000 disimpan dengan bunga majemuk 5% per tahun. Besar simpanan setelah 2 tahun adalah...",
+                    listOf("Rp4.200.000", "Rp4.400.000", "Rp4.410.000", "Rp4.420.000", "Rp4.500.000"), 2,
+                    "4.000.000 × 1,05² = 4.000.000 × 1,1025 = 4.410.000. (Bunga tunggal hanya 4.400.000.)"),
+                Question("m4e", "Titik puncak grafik f(x) = x² − 4x + 1 adalah...",
+                    listOf("(−2, 13)", "(2, −3)", "(2, 5)", "(4, 1)", "(−2, −3)"), 1, "x = −(−4)/2 = 2; f(2) = 4 − 8 + 1 = −3."),
+                Question("m4f", "Domain fungsi f(x) = √(6 − 2x) adalah...",
+                    listOf("x ≥ 3", "x ≤ 3", "x > 3", "x < 3", "x ≤ −3"), 1, "6 − 2x ≥ 0 → −2x ≥ −6 → x ≤ 3 (tanda dibalik karena dibagi −2)."),
+                Question("m4g", "Jumlah tak hingga deret 12 + 6 + 3 + ... adalah...",
+                    listOf("18", "21", "24", "30", "36"), 2, "a = 12, r = ½. S∞ = 12/(1 − ½) = 24."),
+            ),
+        ),
         Step("mat3", 5, "Rab, 28 Okt", Subject.MAT, "Data & Peluang",
             "Elemen Data dan peluang: statistika deskriptif, penyajian data, kaidah pencacahan, peluang kejadian.",
             listOf(
@@ -697,6 +760,62 @@ object Content {
             emptyList(), isReview = true,
         ),
     )
+
+    /** The daily plan with full textbook sections, before it is cut into chapters. */
+    val planSteps: List<Step> = rawSteps.map { s ->
+        s.copy(sections = LessonsExtra.arrange(s.id, Lessons.byStep[s.id] ?: s.sections))
+    }
+
+    val steps: List<Step> = planSteps.flatMap { Chapters.split(it) }.let { base -> insertPractice(base) }
+
+    /** Every stop on the map in order: each sub-chapter, then the chapter quiz. */
+    val nodes: List<PathNode> = steps.flatMap { s ->
+        s.sections.indices.map { PathNode("${s.id}#$it", s, it) } +
+            if (s.questions.isNotEmpty()) listOf(PathNode(s.id, s, -1)) else emptyList()
+    }
+
+    /** The subject books: every chapter that has reading, grouped by subject. */
+    val books: Map<Subject, List<Step>> = steps.filter { it.sections.isNotEmpty() && !it.isReview && !it.id.startsWith("try") }
+        .groupBy { it.subject }
+
+    private fun pack(id: String, day: Int, date: String, subject: Subject, title: String, qs: List<Question>) =
+        Step(id, day, date, subject, title, "Paket latihan dari soal Kompeten TKA dan soal model resmi. Kerjakan seperti ujian.", emptyList(), qs, isPractice = true)
+
+    /** Spreads the question-bank packs over the plan so every day has extra practice. */
+    private fun insertPractice(base: List<Step>): List<Step> {
+        val kb = Bank.kompetenBin.chunked(11)
+        val kg = Bank.kompetenBig.chunked(10)
+        val lb = Bank.latihanBig.chunked(10)
+        val rb = Bank.resmiBig.chunked(13)
+        val after = mapOf(
+            "bin1" to listOf(pack("kbin1", 2, "Min, 25 Okt", Subject.BIN, "Paket B. Indonesia 1", kb[0])),
+            "big1" to listOf(pack("lbig1", 2, "Min, 25 Okt", Subject.BIG, "English Practice 1", lb[0])),
+            "bin2" to listOf(pack("kbin2", 4, "Sel, 27 Okt", Subject.BIN, "Paket B. Indonesia 2", kb[1])),
+            "big2" to listOf(pack("lbig2", 5, "Rab, 28 Okt", Subject.BIG, "English Practice 2", lb[1])),
+            "mat3" to listOf(pack("kmat1", 5, "Rab, 28 Okt", Subject.MAT, "Paket Numerasi", Bank.kompetenMat)),
+            "fis6" to listOf(pack("kbin3", 6, "Kam, 29 Okt", Subject.BIN, "Paket B. Indonesia 3", kb[2])),
+            "try2" to listOf(
+                pack("rbig1", 7, "Jum, 30 Okt", Subject.BIG, "Soal Model Resmi B. Inggris 1", rb[0]),
+                pack("rbig2", 7, "Jum, 30 Okt", Subject.BIG, "Soal Model Resmi B. Inggris 2", rb[1]),
+            ),
+            "try3" to listOf(
+                pack("kbin4", 8, "Sab, 31 Okt", Subject.BIN, "Paket B. Indonesia 4", kb[3]),
+                pack("kbig1", 8, "Sab, 31 Okt", Subject.BIG, "Paket B. Inggris 1", kg[0]),
+            ),
+            "rev1" to listOf(
+                pack("kbig2", 9, "Min, 1 Nov", Subject.BIG, "Paket B. Inggris 2", kg[1]),
+                pack("kbig3", 9, "Min, 1 Nov", Subject.BIG, "Paket B. Inggris 3", kg[2]),
+            ),
+        )
+        // Packs go after the last chapter cut from a plan step: "mat3b" belongs to "mat3".
+        val group = { id: String -> Regex("^[a-z]+\\d+").find(id)?.value ?: id }
+        return base.flatMapIndexed { i, s ->
+            val last = base.getOrNull(i + 1)?.let { group(it.id) != group(s.id) } ?: true
+            listOf(s) + if (last) after[group(s.id)].orEmpty() else emptyList()
+        }
+    }
+
+    val questionCount: Int get() = steps.sumOf { it.questions.size }
 
     val allQuestions: Map<String, Pair<Step, Question>> =
         steps.flatMap { s -> s.questions.map { it.id to (s to it) } }.toMap()

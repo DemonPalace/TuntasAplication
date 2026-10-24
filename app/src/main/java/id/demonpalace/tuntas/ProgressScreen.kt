@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -138,7 +139,7 @@ private fun SubjectRings(store: Store, onOpenStep: (Int) -> Unit) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     ProgressRing(if (steps.isEmpty()) 0f else done / steps.size.toFloat(), s.color, size = 66.dp, stroke = 7.dp) {
-                        Text(s.emoji, fontSize = 22.sp)
+                        Icon(s.icon, null, tint = s.color, modifier = Modifier.size(28.dp))
                     }
                     Spacer(Modifier.height(4.dp))
                     Text(s.label, color = C.text, style = MaterialTheme.typography.labelMedium)

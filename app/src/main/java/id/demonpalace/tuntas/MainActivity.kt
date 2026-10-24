@@ -38,6 +38,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.MenuBook
 import androidx.compose.material.icons.rounded.BarChart
 import androidx.compose.material.icons.rounded.Map
 import androidx.compose.material.icons.rounded.Shield
@@ -62,8 +63,13 @@ import androidx.compose.ui.unit.dp
 
 sealed interface Route {
     data class Home(val tab: Int) : Route
-    data class Lesson(val index: Int) : Route
-    data class Quiz(val index: Int) : Route
+    /** One sub-chapter opened from the map, by node index. */
+    data class Read(val node: Int) : Route
+    /** Table of contents of one book. */
+    data class Book(val subject: Subject) : Route
+    /** A whole chapter in the reader, starting at [section]; [back] is where closing it returns. */
+    data class Chapter(val index: Int, val section: Int, val back: Route) : Route
+    data class Quiz(val index: Int, val back: Route) : Route
     data object Retry : Route
 }
 
@@ -98,6 +104,7 @@ private data class TabItem(val label: String, val icon: ImageVector)
 
 private val tabs = listOf(
     TabItem("Jalur", Icons.Rounded.Map),
+    TabItem("Buku", Icons.AutoMirrored.Rounded.MenuBook),
     TabItem("Progres", Icons.Rounded.BarChart),
     TabItem("Fokus", Icons.Rounded.Timer),
     TabItem("Blokir", Icons.Rounded.Shield),
@@ -109,14 +116,24 @@ fun App(store: Store, blockedPkg: String?, onDismissBlocked: () -> Unit) {
     var lastTab by remember { mutableStateOf(0) }
 
     // A blocked app sends you straight to the focus timer.
-    LaunchedEffect(blockedPkg) { if (blockedPkg != null) route = Route.Home(2).also { lastTab = 2 } }
+    LaunchedEffect(blockedPkg) { if (blockedPkg != null) route = Route.Home(3).also { lastTab = 3 } }
+
+    fun go(r: Route) {
+        if (r is Route.Home) lastTab = r.tab
+        route = r
+    }
 
     BackHandler(enabled = route != Route.Home(0)) {
-        route = when (val r = route) {
-            is Route.Quiz -> Route.Lesson(r.index)
-            is Route.Lesson, Route.Retry -> Route.Home(lastTab)
-            is Route.Home -> Route.Home(0).also { lastTab = 0 }
-        }
+        go(
+            when (val r = route) {
+                is Route.Quiz -> r.back
+                is Route.Chapter -> r.back
+                is Route.Read -> Route.Home(0)
+                is Route.Book -> Route.Home(1)
+                Route.Retry -> Route.Home(2)
+                is Route.Home -> Route.Home(0)
+            },
+        )
     }
 
     SessionGuard(store)
@@ -139,40 +156,57 @@ fun App(store: Store, blockedPkg: String?, onDismissBlocked: () -> Unit) {
                 is Route.Home -> Column(Modifier.fillMaxSize()) {
                     Box(Modifier.weight(1f).statusBarsPadding()) {
                         when (r.tab) {
-                            0 -> PathScreen(store) { route = Route.Lesson(it) }
-                            1 -> ProgressScreen(store, onRetry = { route = Route.Retry }, onOpenStep = { route = Route.Lesson(it) })
-                            2 -> FocusScreen(store, blockedPkg, onDismissBlocked)
+                            0 -> PathScreen(store) { i ->
+                                val n = Content.nodes[i]
+                                go(if (n.isQuiz) Route.Quiz(Content.steps.indexOf(n.step), Route.Home(0)) else Route.Read(i))
+                            }
+                            1 -> LibraryScreen(store, onOpenBook = { go(Route.Book(it)) }, onRead = { i, s -> go(Route.Chapter(i, s, Route.Home(1))) })
+                            2 -> ProgressScreen(store, onRetry = { go(Route.Retry) }, onOpenStep = { i ->
+                                go(if (Content.steps[i].sections.isNotEmpty()) Route.Chapter(i, 0, Route.Home(2)) else Route.Quiz(i, Route.Home(2)))
+                            })
+                            3 -> FocusScreen(store, blockedPkg, onDismissBlocked)
                             else -> BlockScreen(store)
                         }
                     }
-                    BottomBar(r.tab) { lastTab = it; route = Route.Home(it) }
+                    BottomBar(r.tab) { go(Route.Home(it)) }
                 }
-                is Route.Lesson -> LessonScreen(
-                    store, Content.steps[r.index],
-                    onBack = { route = Route.Home(lastTab) },
-                    onStartQuiz = { route = Route.Quiz(r.index) },
-                    onFinishReview = { route = Route.Home(1).also { lastTab = 1 } },
+                is Route.Read -> {
+                    val n = Content.nodes[r.node]
+                    BookReader(
+                        store, n.step, n.section, wholeChapter = false,
+                        onBack = { go(Route.Home(0)) },
+                        onFinished = { go(Route.Home(0)) },
+                        onStartQuiz = { go(Route.Quiz(Content.steps.indexOf(n.step), Route.Home(0))) },
+                    )
+                }
+                is Route.Book -> BookScreen(
+                    store, r.subject,
+                    onBack = { go(Route.Home(1)) },
+                    onRead = { i, s -> go(Route.Chapter(i, s, r)) },
+                    onQuiz = { i -> go(Route.Quiz(i, r)) },
+                )
+                is Route.Chapter -> BookReader(
+                    store, Content.steps[r.index], r.section, wholeChapter = true,
+                    onBack = { go(r.back) },
+                    onFinished = { go(r.back) },
+                    onStartQuiz = { go(Route.Quiz(r.index, r.back)) },
                 )
                 is Route.Quiz -> {
                     val step = Content.steps[r.index]
                     QuizScreen(
                         store, step.title, step.subject.color, step.questions,
-                        onExit = { route = Route.Lesson(r.index) },
+                        onExit = { go(r.back) },
                         onDone = { correct -> store.finishStep(step, correct) },
-                        onContinue = {
-                            val next = r.index + 1
-                            route = if (next < Content.steps.size) Route.Home(0) else Route.Home(1)
-                            lastTab = if (next < Content.steps.size) 0 else 1
-                        },
+                        onContinue = { go(r.back) },
                     )
                 }
                 Route.Retry -> {
                     val qs = remember { store.wrong.mapNotNull { Content.allQuestions[it]?.second }.shuffled() }
                     QuizScreen(
                         store, "Ulang soal yang salah", C.pink, qs,
-                        onExit = { route = Route.Home(1) },
+                        onExit = { go(Route.Home(2)) },
                         onDone = {},
-                        onContinue = { route = Route.Home(1) },
+                        onContinue = { go(Route.Home(2)) },
                     )
                 }
             }
@@ -182,8 +216,9 @@ fun App(store: Store, blockedPkg: String?, onDismissBlocked: () -> Unit) {
 
 private fun depth(r: Route) = when (r) {
     is Route.Home -> 0
-    is Route.Lesson, Route.Retry -> 1
-    is Route.Quiz -> 2
+    is Route.Book -> 1
+    is Route.Read, is Route.Chapter, Route.Retry -> 2
+    is Route.Quiz -> 3
 }
 
 @Composable
@@ -201,14 +236,14 @@ private fun BottomBar(selected: Int, onSelect: (Int) -> Unit) {
                     .clip(RoundedCornerShape(16.dp))
                     .clickable(remember { MutableInteractionSource() }, null) { onSelect(i) }
                     .testTag("tab_$i")
-                    .padding(horizontal = 14.dp, vertical = 6.dp),
+                    .padding(horizontal = 6.dp, vertical = 6.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Box(
                     Modifier.scale(scale).clip(RoundedCornerShape(50))
                         .background(if (on) C.blue.copy(alpha = 0.12f) else C.bg)
                         .border(2.dp, if (on) C.blue.copy(alpha = 0.6f) else C.bg, RoundedCornerShape(50))
-                        .padding(horizontal = 16.dp, vertical = 4.dp),
+                        .padding(horizontal = 12.dp, vertical = 4.dp),
                 ) {
                     Icon(t.icon, t.label, tint = if (on) C.blue else C.faded, modifier = Modifier.size(24.dp))
                 }

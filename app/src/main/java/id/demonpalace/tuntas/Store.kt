@@ -14,6 +14,9 @@ class Store private constructor(private val prefs: SharedPreferences) {
 
     var done by mutableStateOf(prefs.getStringSet(K_DONE, emptySet())!!.toSet())
         private set
+    /** Sub-chapters finished on the map or in the book, keyed by [PathNode.id]. */
+    var read by mutableStateOf(prefs.getStringSet(K_READ, emptySet())!!.toSet())
+        private set
     var wrong by mutableStateOf(prefs.getStringSet(K_WRONG, emptySet())!!.toSet())
         private set
     var xp by mutableIntStateOf(prefs.getInt(K_XP, 0))
@@ -52,8 +55,40 @@ class Store private constructor(private val prefs: SharedPreferences) {
     val level get() = xp / 100 + 1
     val levelProgress get() = (xp % 100) / 100f
 
-    fun isUnlocked(index: Int): Boolean =
-        index == 0 || Content.steps[index - 1].id in done
+    /** A step is open once the map reaches its first stop. */
+    fun isUnlocked(index: Int): Boolean {
+        val first = Content.nodes.indexOfFirst { it.step.id == Content.steps[index].id }
+        return first <= 0 || nodeUnlocked(first)
+    }
+
+    fun nodeDone(n: PathNode): Boolean = if (n.isQuiz) n.step.id in done else n.id in read
+
+    fun nodeUnlocked(i: Int): Boolean = i == 0 || nodeDone(Content.nodes[i - 1])
+
+    /** Index of the first node not finished yet, i.e. where the "MULAI" bubble sits. */
+    val currentNode: Int get() = Content.nodes.indexOfFirst { !nodeDone(it) }
+
+    fun stepRead(step: Step) = step.sections.indices.all { "${step.id}#$it" in read }
+
+    /** Last sub-chapter opened in each book, "stepId#section". */
+    fun bookmark(subject: Subject): String? = prefs.getString("bookmark_${subject.name}", null)
+
+    fun saveBookmark(subject: Subject, nodeId: String) {
+        prefs.edit().putString("bookmark_${subject.name}", nodeId).apply()
+        tick++
+    }
+
+    /** Marks a sub-chapter as read. Gives XP the first time; a reading-only step finishes with its last page. */
+    fun markRead(step: Step, section: Int): Int {
+        val id = "${step.id}#$section"
+        if (id in read) return 0
+        read = read + id
+        prefs.edit().putStringSet(K_READ, read).apply()
+        addXp(10)
+        touchStreak()
+        if (step.questions.isEmpty() && stepRead(step)) finishStep(step, 0) else checkBadges()
+        return 10
+    }
 
     /** True while the strict part of a session (belajar or latihan soal) is running. */
     fun focusActive(now: Long = System.currentTimeMillis()): Boolean {
@@ -120,12 +155,14 @@ class Store private constructor(private val prefs: SharedPreferences) {
 
     /** Opens the reward chest at the end of a finished day. Returns the XP gained, 0 if not allowed. */
     fun claimChest(day: Int): Int {
-        if (chestClaimed(day) || !Content.steps.filter { it.day == day }.all { it.id in done }) return 0
+        if (chestClaimed(day) || !dayDone(day)) return 0
         prefs.edit().putBoolean("chest_$day", true).apply()
         addXp(25)
         tick++
         return 25
     }
+
+    fun dayDone(day: Int) = Content.nodes.filter { it.step.day == day }.all { nodeDone(it) }
 
     fun sessionsDone(date: LocalDate = LocalDate.now()) = prefs.getInt("sessions_$date", 0)
 
@@ -169,7 +206,7 @@ class Store private constructor(private val prefs: SharedPreferences) {
         prefs.edit().clear().putStringSet(K_BLOCKED, keepBlocked).putInt(K_LIMIT, keepLimit)
             .putBoolean(K_ALWAYS, alwaysBlock).apply()
         studyMin = 300; practiceMin = 60
-        done = emptySet(); wrong = emptySet(); xp = 0; streak = 0; badges = emptySet()
+        done = emptySet(); read = emptySet(); wrong = emptySet(); xp = 0; streak = 0; badges = emptySet()
         phase = 0; phaseEndAt = 0L; photos = emptyList(); tick++
     }
 
@@ -203,6 +240,7 @@ class Store private constructor(private val prefs: SharedPreferences) {
         const val PREFS = "tuntas"
         private const val K_DONE = "done"
         private const val K_WRONG = "wrong"
+        private const val K_READ = "read"
         private const val K_XP = "xp"
         private const val K_STREAK = "streak"
         private const val K_LAST_DAY = "last_day"
@@ -226,7 +264,7 @@ class Store private constructor(private val prefs: SharedPreferences) {
 
 enum class Badge(val emoji: String, val title: String, val desc: String, val check: (Store) -> Boolean) {
     FIRST_STEP("🚀", "Langkah Pertama", "Selesaikan 1 langkah", { it.done.isNotEmpty() }),
-    DAY_ONE("🌅", "Hari 1 Tuntas", "Selesaikan semua langkah hari 1", { s -> Content.steps.filter { it.day == 1 }.all { it.id in s.done } }),
+    DAY_ONE("🌅", "Hari 1 Tuntas", "Selesaikan semua langkah hari 1", { s -> s.dayDone(1) }),
     MATH("📐", "Jago Hitung", "Selesaikan semua langkah Matematika", { s -> Content.steps.filter { it.subject == Subject.MAT }.all { it.id in s.done } }),
     PHYSICS("⚡", "Fisikawan", "Selesaikan semua langkah Fisika", { s -> Content.steps.filter { it.subject == Subject.FIS }.all { it.id in s.done } }),
     PERFECT("💯", "Sempurna", "Benar semua di satu kuis", { s -> Content.steps.any { st -> st.questions.isNotEmpty() && s.bestScore(st.id) == st.questions.size } }),

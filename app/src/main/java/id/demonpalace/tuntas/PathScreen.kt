@@ -35,6 +35,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -81,13 +82,13 @@ private fun swing(i: Int) = sin(i * 0.9).toFloat()
 fun PathScreen(store: Store, onOpen: (Int) -> Unit) {
     val scroll = rememberScrollState()
     var selected by remember { mutableStateOf<Int?>(null) }
-    val current = Content.steps.indices.firstOrNull { Content.steps[it].id !in store.done && store.isUnlocked(it) }
+    val current = store.currentNode.takeIf { it >= 0 }
     val density = LocalDensity.current
 
-    // Bring the current step into view when the map opens.
+    // Bring the current stop into view when the map opens.
     LaunchedEffect(Unit) {
         val idx = current ?: return@LaunchedEffect
-        val day = Content.steps[idx].day
+        val day = Content.nodes[idx].step.day
         val px = with(density) { (ROW * idx + 150.dp * day - 260.dp).toPx() }.roundToInt().coerceAtLeast(0)
         scroll.animateScrollTo(px, tween(900))
     }
@@ -99,9 +100,9 @@ fun PathScreen(store: Store, onOpen: (Int) -> Unit) {
                 Modifier.fillMaxSize().verticalScroll(scroll).padding(bottom = 140.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Content.steps.groupBy { it.day }.forEach { (day, steps) ->
-                    DayBanner(day, steps)
-                    DayPath(store, steps, current, selected) { idx ->
+                Content.nodes.indices.groupBy { Content.nodes[it].step.day }.forEach { (day, idxs) ->
+                    DayBanner(day, idxs.map { Content.nodes[it].step }.distinct())
+                    DayPath(store, idxs, current, selected) { idx ->
                         selected = if (selected == idx) null else idx
                     }
                     Chest(store, day)
@@ -110,7 +111,7 @@ fun PathScreen(store: Store, onOpen: (Int) -> Unit) {
             }
         }
 
-        // Popover card for the tapped step, Duolingo style.
+        // Popover card for the tapped stop, Duolingo style.
         val sel = selected
         AnimatedVisibility(
             visible = sel != null,
@@ -127,7 +128,7 @@ fun PathScreen(store: Store, onOpen: (Int) -> Unit) {
 @Composable
 private fun MapHeader(store: Store) {
     val daysLeft = ChronoUnit.DAYS.between(LocalDate.now(), LocalDate.parse(Content.EXAM_DATE)).coerceAtLeast(0)
-    val doneCount = store.done.size
+    val doneCount = Content.nodes.count { store.nodeDone(it) }
     Column(
         Modifier.fillMaxWidth().background(C.bg).padding(horizontal = 16.dp, vertical = 10.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -140,8 +141,8 @@ private fun MapHeader(store: Store) {
             HeaderChip("⏳", "$daysLeft hari", C.good)
         }
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            LinearBar(doneCount / Content.steps.size.toFloat(), C.good, Modifier.weight(1f), 12.dp)
-            Text("$doneCount/${Content.steps.size}", color = C.muted, style = MaterialTheme.typography.labelLarge)
+            LinearBar(doneCount / Content.nodes.size.toFloat(), C.good, Modifier.weight(1f), 12.dp)
+            Text("$doneCount/${Content.nodes.size}", color = C.muted, style = MaterialTheme.typography.labelLarge)
         }
     }
 }
@@ -170,24 +171,25 @@ private fun DayBanner(day: Int, steps: List<Step>) {
         Column {
             Text("HARI $day · ${steps.first().date.uppercase()}", color = Color.White.copy(alpha = 0.85f),
                 style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.ExtraBold)
-            Text(steps.joinToString(" · ") { it.title }, color = Color.White, style = MaterialTheme.typography.titleMedium, maxLines = 2)
+            Text(steps.filter { !it.isPractice }.ifEmpty { steps }.joinToString(" · ") { it.title }, color = Color.White, style = MaterialTheme.typography.titleMedium, maxLines = 2)
+            Text("${Content.nodes.count { it.step.day == day }} langkah · ${steps.sumOf { it.questions.size }} soal",
+                color = Color.White.copy(alpha = 0.85f), style = MaterialTheme.typography.labelMedium)
         }
     }
 }
 
 @Composable
-private fun DayPath(store: Store, steps: List<Step>, current: Int?, selected: Int?, onTap: (Int) -> Unit) {
-    BoxWithConstraints(Modifier.fillMaxWidth().height(ROW * steps.size)) {
+private fun DayPath(store: Store, indices: List<Int>, current: Int?, selected: Int?, onTap: (Int) -> Unit) {
+    BoxWithConstraints(Modifier.fillMaxWidth().height(ROW * indices.size)) {
         val swingPx = with(LocalDensity.current) { (maxWidth / 2 - NODE).toPx() * 0.7f }
         val rowPx = with(LocalDensity.current) { ROW.toPx() }
-        val indices = steps.map { Content.steps.indexOf(it) }
 
         // Dotted trail through the node centres.
         Canvas(Modifier.fillMaxSize()) {
             for (k in 0 until indices.size - 1) {
                 val a = Offset(size.width / 2 + swing(indices[k]) * swingPx, rowPx * (k + 0.5f))
                 val b = Offset(size.width / 2 + swing(indices[k + 1]) * swingPx, rowPx * (k + 1.5f))
-                val doneLeg = steps[k].id in store.done
+                val doneLeg = store.nodeDone(Content.nodes[indices[k]])
                 drawLine(
                     if (doneLeg) C.gold.copy(alpha = 0.8f) else C.line,
                     a, b, strokeWidth = 10f, cap = StrokeCap.Round,
@@ -201,17 +203,18 @@ private fun DayPath(store: Store, steps: List<Step>, current: Int?, selected: In
                     .align(Alignment.TopCenter).height(ROW),
                 contentAlignment = Alignment.Center,
             ) {
-                PathNode(store, idx, isCurrent = idx == current, isSelected = idx == selected) { onTap(idx) }
+                MapStop(store, idx, isCurrent = idx == current, isSelected = idx == selected) { onTap(idx) }
             }
         }
     }
 }
 
 @Composable
-private fun PathNode(store: Store, idx: Int, isCurrent: Boolean, isSelected: Boolean, onTap: () -> Unit) {
-    val step = Content.steps[idx]
-    val done = step.id in store.done
-    val unlocked = store.isUnlocked(idx)
+private fun MapStop(store: Store, idx: Int, isCurrent: Boolean, isSelected: Boolean, onTap: () -> Unit) {
+    val node = Content.nodes[idx]
+    val step = node.step
+    val done = store.nodeDone(node)
+    val unlocked = store.nodeUnlocked(idx)
     val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
     val shake = remember { Animatable(0f) }
@@ -220,6 +223,8 @@ private fun PathNode(store: Store, idx: Int, isCurrent: Boolean, isSelected: Boo
     val press by animateFloatAsState(if (pressed) 0.9f else if (isSelected) 1.08f else 1f, spring(Spring.DampingRatioMediumBouncy), label = "node")
     val bob = if (isCurrent) rememberBob(5f) else 0f
     val pulse = if (isCurrent) rememberPulse() else 0f
+    // Quizzes are bigger stops than reading stops, so the rhythm of the map shows.
+    val disc = if (node.isQuiz) NODE else NODE - 10.dp
 
     val base = when {
         done -> C.gold
@@ -243,13 +248,13 @@ private fun PathNode(store: Store, idx: Int, isCurrent: Boolean, isSelected: Boo
         ) {
             if (isCurrent) {
                 Canvas(Modifier.fillMaxSize()) {
-                    drawCircle(step.subject.color.copy(alpha = 0.45f * (1 - pulse)), radius = size.minDimension / 2 * (0.8f + 0.25f * pulse), style = Stroke(6f))
+                    drawCircle(step.subject.color.copy(alpha = 0.45f * (1 - pulse)), radius = disc.toPx() / 2 * (1.05f + 0.25f * pulse), style = Stroke(6f))
                 }
             }
             // 3D button: darker disc underneath, face on top.
-            Box(Modifier.size(NODE).offset(y = 6.dp).clip(CircleShape).background(darken(base)))
+            Box(Modifier.size(disc).offset(y = 6.dp).clip(CircleShape).background(darken(base)))
             Box(
-                Modifier.size(NODE).scale(press).clip(CircleShape)
+                Modifier.size(disc).scale(press).clip(CircleShape)
                     .background(base)
                     .clickable(src, null) {
                         if (unlocked) {
@@ -265,19 +270,14 @@ private fun PathNode(store: Store, idx: Int, isCurrent: Boolean, isSelected: Boo
                     .testTag("node_$idx"),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(
-                    when {
-                        done -> "✓"
-                        !unlocked -> "🔒"
-                        step.isReview -> "📝"
-                        else -> step.subject.emoji
-                    },
-                    fontSize = if (done) 34.sp else 30.sp,
-                    color = Color.White, fontWeight = FontWeight.Black,
+                Icon(
+                    nodeIcon(node, done, unlocked), null,
+                    tint = if (unlocked || done) Color.White else C.faded,
+                    modifier = Modifier.size(if (node.isQuiz) 36.dp else 30.dp),
                 )
             }
         }
-        if (done && step.questions.isNotEmpty()) {
+        if (done && node.isQuiz) {
             val stars = starsFor(store.bestScore(step.id), step.questions.size)
             Text("★".repeat(stars) + "☆".repeat(3 - stars), color = C.gold, fontSize = 14.sp, letterSpacing = 2.sp)
         }
@@ -293,7 +293,7 @@ fun starsFor(correct: Int, total: Int): Int = when {
 
 @Composable
 private fun Chest(store: Store, day: Int) {
-    val ready = Content.steps.filter { it.day == day }.all { it.id in store.done }
+    val ready = store.dayDone(day)
     val claimed = remember(store.tick, store.xp) { store.chestClaimed(day) }
     var reward by remember { mutableIntStateOf(0) }
     val wobble = if (ready && !claimed) rememberBob(8f, 500) else 0f
@@ -327,7 +327,7 @@ private fun Chest(store: Store, day: Int) {
 
 @Composable
 private fun FinishFlag(store: Store) {
-    val all = store.done.size == Content.steps.size
+    val all = Content.nodes.all { store.nodeDone(it) }
     Column(Modifier.padding(top = 10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         Text(if (all) "🏆" else "🏁", fontSize = 56.sp, modifier = Modifier.offset(y = rememberBob(4f).dp))
         Text(
@@ -339,8 +339,10 @@ private fun FinishFlag(store: Store) {
 
 @Composable
 private fun StepPopover(store: Store, idx: Int, onClose: () -> Unit, onStart: () -> Unit) {
-    val step = Content.steps[idx]
-    val done = step.id in store.done
+    val node = Content.nodes[idx]
+    val step = node.step
+    val done = store.nodeDone(node)
+    val nth = Content.nodes.filter { it.step.id == step.id && !it.isQuiz }.size
     Column(
         Modifier.padding(16.dp).fillMaxWidth()
             .clip(RoundedCornerShape(26.dp))
@@ -349,21 +351,32 @@ private fun StepPopover(store: Store, idx: Int, onClose: () -> Unit, onStart: ()
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("${step.subject.emoji}  ${step.subject.label.uppercase()} · HARI ${step.day}", color = Color.White.copy(alpha = 0.85f),
+            Icon(step.subject.icon, null, tint = Color.White.copy(alpha = 0.9f), modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(6.dp))
+            Text("${step.subject.label.uppercase()} · HARI ${step.day}", color = Color.White.copy(alpha = 0.85f),
                 style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.ExtraBold, modifier = Modifier.weight(1f))
             Text("✕", color = Color.White, fontSize = 20.sp, modifier = Modifier.clip(CircleShape).clickable(onClick = onClose).padding(6.dp))
         }
-        Text(step.title, color = Color.White, style = MaterialTheme.typography.headlineMedium)
-        Text(step.kisi, color = Color.White.copy(alpha = 0.9f), style = MaterialTheme.typography.bodyMedium)
-        Text(
-            if (step.questions.isEmpty()) "${step.sections.size} kartu ringkasan"
-            else "${step.sections.size} kartu materi · ${step.questions.size} soal" +
-                if (done) " · skor terbaik ${store.bestScore(step.id)}/${step.questions.size}" else "",
-            color = Color.White, style = MaterialTheme.typography.labelLarge,
-        )
+        if (node.isQuiz) {
+            Text(if (step.isPractice) step.title else "Latihan: ${step.title}", color = Color.White, style = MaterialTheme.typography.headlineMedium)
+            Text(
+                "${step.questions.size} soal" + if (done) " · skor terbaik ${store.bestScore(step.id)}/${step.questions.size}" else "",
+                color = Color.White, style = MaterialTheme.typography.labelLarge,
+            )
+        } else {
+            val ch = chapterNo(step)
+            Text(if (ch > 0) "Bab $ch · subbab ${node.section + 1} dari $nth" else "Ringkasan · bagian ${node.section + 1} dari $nth", color = Color.White.copy(alpha = 0.9f), style = MaterialTheme.typography.labelLarge)
+            Text(step.sections[node.section].title, color = Color.White, style = MaterialTheme.typography.headlineMedium)
+            Text(step.title, color = Color.White.copy(alpha = 0.9f), style = MaterialTheme.typography.bodyMedium)
+        }
         Spacer(Modifier.height(4.dp))
         BouncyButton(
-            if (done) "ULANGI  (+XP lagi)" else "MULAI BELAJAR",
+            when {
+                node.isQuiz && done -> "ULANGI  (+XP lagi)"
+                node.isQuiz -> "MULAI LATIHAN"
+                done -> "BACA LAGI"
+                else -> "MULAI MEMBACA"
+            },
             Modifier.fillMaxWidth().testTag("start_step"),
             color = Color.White,
             onClick = onStart,
