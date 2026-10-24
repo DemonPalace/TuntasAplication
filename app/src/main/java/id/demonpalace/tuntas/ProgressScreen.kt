@@ -295,7 +295,7 @@ private fun PhotoStrip(store: Store) {
 private fun Sources() {
     val ctx = LocalContext.current
     Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(C.surface).padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Text("Materi disusun dari kisi-kisi resmi TKA SMA 2026 (Pusmendik Kemendikdasmen) sebagaimana dikutip media berikut. Ketuk untuk membuka.",
+        Text("Sumber materi dan soal. Ketuk untuk membuka.",
             color = C.muted, style = MaterialTheme.typography.bodyMedium)
         Content.sources.forEach { s ->
             Column(

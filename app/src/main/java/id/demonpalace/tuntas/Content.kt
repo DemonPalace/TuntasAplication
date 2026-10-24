@@ -97,37 +97,37 @@ private const val PASSAGE_EXPO =
 object Content {
 
     val sources = listOf(
-        Source("Kisi-kisi TKA SMA 2026 (CNN Indonesia, mengutip Pusmendik)",
+        Source("Kisi-kisi mapel SMA 2026 (CNN Indonesia, mengutip Pusmendik)",
             "https://www.cnnindonesia.com/edukasi/20260806110123-569-1389222/mata-pelajaran-yang-diujikan-di-tka-sma-2026-lengkap-kisi-kisinya",
             "Lingkup materi Matematika, B. Indonesia, B. Inggris, Fisika."),
-        Source("Kisi-kisi & jadwal TKA SMA/SMK 2026 (Medcom)",
+        Source("Kisi-kisi mapel SMA/SMK 2026 (Medcom)",
             "https://www.medcom.id/pendidikan/news-pendidikan/4KZQrq6k-kisi-kisi-materi-tka-sma-smk-2026-mapel-wajib-pilihan-dan-jadwal-pelaksanaan",
             "Mapel wajib dan pilihan, karakter teks bahasa."),
-        Source("Kisi-kisi TKA Fisika SMA 2026 (Kumparan, mengutip Pusmendik)",
+        Source("Kisi-kisi Fisika SMA 2026 (Kumparan, mengutip Pusmendik)",
             "https://kumparan.com/berita-hari-ini/kisi-kisi-tka-fisika-sma-2026-ini-muatan-materinya-28JyA5AFAzi",
             "Enam muatan Fisika: kinematika, dinamika, fluida, gelombang, kalor-termodinamika, kelistrikan."),
-        Source("Kisi-kisi TKA SMA Fisika (Bisadanedu)",
+        Source("Kisi-kisi Fisika SMA (Bisadanedu)",
             "https://www.bisadanedu.com/artikel/kisi-kisi-tka-sma-fisika",
             "Rincian sub-materi Fisika per muatan."),
-        Source("Kisi-kisi TKA SMA 2026 lengkap (Blog ITERA)",
+        Source("Kisi-kisi SMA 2026 lengkap (Blog ITERA)",
             "https://blog.itera.ac.id/kisi-kisi-tka-sma-2026-lengkap-materi-semua-mapel-wajib-pilihan/",
             "Rincian sub-materi Matematika dan B. Inggris."),
-        Source("Contoh soal TKA mapel pilihan SMA (GNFI, dari Pusmendik)",
+        Source("Contoh soal mapel pilihan SMA (GNFI, dari Pusmendik)",
             "https://www.goodnewsfromindonesia.id/ragam/belajar/contoh-soal-tka-mata-pelajaran-pilihan-jenjang-sma-dari-matematika-tingkat-lanjut-hingga-bahasa-arab",
             "Model soal Fisika: efek Doppler, meja berputar, botol parfum, mesin fotokopi."),
-        Source("Contoh soal TKA SMA 2026 (Blog ITERA)",
+        Source("Contoh soal SMA 2026 (Blog ITERA)",
             "https://blog.itera.ac.id/?p=1518",
             "Model soal diskon bertingkat, nilai minimum fungsi, ide pokok, 'despite', energi kinetik."),
-        Source("10 contoh soal TKA SMA Matematika (detikEdu)",
+        Source("10 contoh soal SMA Matematika (detikEdu)",
             "https://www.detik.com/edu/sekolah/d-8159201/10-contoh-soal-tka-sma-matematika-lengkap-dengan-jawaban-dan-pembahasan",
             "Acuan tingkat kesulitan dan format soal bab Matematika."),
-        Source("15 contoh soal TKA B. Inggris SMA (CNN Indonesia)",
+        Source("15 contoh soal B. Inggris SMA (CNN Indonesia)",
             "https://www.cnnindonesia.com/edukasi/20251003103229-569-1280465/15-contoh-soal-tka-bahasa-inggris-sma-2025-dan-kunci-jawabannya",
             "Acuan jenis teks dan tipe pertanyaan bab B. Inggris."),
-        Source("Kisi-kisi TKA SMA 2026 dan 25 contoh soal (Kompas.com)",
+        Source("Kisi-kisi SMA 2026 dan 25 contoh soal (Kompas.com)",
             "https://www.kompas.com/skola/read/2026/08/19/102933969/kisi-kisi-tka-sma-2026-jadwal-resmi-materi-dan-25-contoh-soal-untuk",
             "Acuan format soal B. Indonesia dan Matematika."),
-        Source("Laman resmi TKA Kemendikdasmen", "https://tka.kemendikdasmen.go.id", "Cek pengumuman terbaru di sini."),
+        Source("Laman resmi Kemendikdasmen", "https://tka.kemendikdasmen.go.id", "Cek pengumuman terbaru di sini."),
     )
 
     private val rawSteps: List<Step> = listOf(
@@ -738,7 +738,7 @@ object Content {
         ),
         // ================= HARI 9 · Min 1 Nov =================
         Step("rev2", 9, "Min, 1 Nov", Subject.MIX, "Rumus Inti & Strategi Ujian",
-            "Ringkasan rumus inti dan strategi mengerjakan soal TKA.",
+            "Ringkasan rumus inti dan strategi mengerjakan soal ujian.",
             listOf(
                 Section("Rumus inti Matematika", listOf(
                     "Persen bertingkat: kalikan faktornya. Berbalik nilai: §a_{1}b_{1} = a_{2}b_{2}§.",
@@ -783,7 +783,7 @@ object Content {
         .groupBy { it.subject }
 
     private fun pack(id: String, day: Int, date: String, subject: Subject, title: String, qs: List<Question>) =
-        Step(id, day, date, subject, title, "Paket latihan dari soal Kompeten TKA dan soal model resmi. Kerjakan seperti ujian.", emptyList(), qs, isPractice = true)
+        Step(id, day, date, subject, title, "Paket latihan dari kumpulan soal latihan dan soal model resmi. Kerjakan seperti ujian.", emptyList(), qs, isPractice = true)
 
     /** Spreads the question-bank packs over the plan so every day has extra practice. */
     private fun insertPractice(base: List<Step>): List<Step> {

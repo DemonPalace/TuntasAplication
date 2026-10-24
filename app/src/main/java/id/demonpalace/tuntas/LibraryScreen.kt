@@ -68,7 +68,7 @@ private fun resolveBookmark(store: Store, s: Subject): Pair<Int, Int>? {
     return idx to sec
 }
 
-/** The "Buku" tab: one textbook per subject, covering the whole TKA kisi-kisi. */
+/** The "Buku" tab: one textbook per subject, one per subject. */
 @Composable
 fun LibraryScreen(store: Store, onOpenBook: (Subject) -> Unit, onRead: (stepIndex: Int, section: Int) -> Unit) {
     val totalSub = shelf.sumOf { subCount(it) }
@@ -78,7 +78,7 @@ fun LibraryScreen(store: Store, onOpenBook: (Subject) -> Unit, onRead: (stepInde
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         Text("Buku", color = C.text, style = MaterialTheme.typography.headlineLarge)
-        Text("Empat buku sesuai kisi-kisi TKA SMA 2026: tiga mapel wajib dan Fisika.", color = C.muted, style = MaterialTheme.typography.bodyMedium)
+        Text("Empat buku: Matematika, Bahasa Indonesia, Bahasa Inggris, dan Fisika.", color = C.muted, style = MaterialTheme.typography.bodyMedium)
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Pill("$totalRead/$totalSub subbab dibaca", C.good)
             Pill("${Content.questionCount} soal", C.blue)

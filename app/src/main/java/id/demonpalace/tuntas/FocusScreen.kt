@@ -23,6 +23,8 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -119,19 +121,14 @@ fun FocusScreen(store: Store) {
     }
 }
 
-private data class Preset(val label: String, val study: Int, val practice: Int, val note: String)
-
-private val presets = listOf(
-    Preset("Sesi TKA", 300, 60, "5 jam belajar + 1 jam soal"),
-    Preset("Setengah", 120, 30, "2 jam belajar + 30 menit soal"),
-    Preset("Singkat", 25, 10, "25 menit + 10 menit"),
-)
+/** Quick picks under each duration; any value in between is reachable with the minus and plus buttons. */
+private val studyQuick = listOf(25, 60, 120, 180, 300)
+private val practiceQuick = listOf(10, 30, 60)
 
 @Composable
 private fun SessionSetup(store: Store) {
     val ctx = LocalContext.current
     store.tick
-    var pick by remember { mutableIntStateOf(presets.indexOfFirst { it.study == store.studyMin && it.practice == store.practiceMin }.coerceAtLeast(0)) }
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
@@ -142,34 +139,19 @@ private fun SessionSetup(store: Store) {
 
         // The three phases in order.
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            PhaseChip("1. Belajar", fmtMin(presets[pick].study), C.violet, Modifier.weight(1f))
-            PhaseChip("2. Soal", fmtMin(presets[pick].practice), C.pink, Modifier.weight(1f))
+            PhaseChip("1. Belajar", fmtMin(store.studyMin), C.violet, Modifier.weight(1f))
+            PhaseChip("2. Soal", fmtMin(store.practiceMin), C.pink, Modifier.weight(1f))
             PhaseChip("3. Ringkasan", "foto/ketik", C.good, Modifier.weight(1f))
         }
 
-        SectionTitle("Pilih durasi")
-        presets.forEachIndexed { i, p ->
-            val on = i == pick
-            Row(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp))
-                    .background(if (on) C.violet.copy(alpha = 0.18f) else C.surface)
-                    .border(2.dp, if (on) C.violet else C.line, RoundedCornerShape(16.dp))
-                    .clickable { pick = i }.testTag("preset_$i").padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Column(Modifier.weight(1f)) {
-                    Text(p.label, color = C.text, style = MaterialTheme.typography.titleMedium)
-                    Text(p.note, color = C.muted, style = MaterialTheme.typography.bodyMedium)
-                }
-                Text(if (on) "●" else "○", color = if (on) C.violet else C.muted, fontSize = 22.sp)
-            }
-        }
+        SectionTitle("Durasi")
+        DurationCard("Belajar", store.studyMin, 5..600, studyQuick, "study") { store.setDurations(it, store.practiceMin) }
+        DurationCard("Latihan soal", store.practiceMin, 0..240, practiceQuick, "practice") { store.setDurations(store.studyMin, it) }
 
         Text("Saat mulai, Android akan bertanya \"Sematkan aplikasi?\". Pilih Ya atau Mengerti. Kalau tidak muncul, aktifkan di Setelan, Keamanan, Sematkan aplikasi.",
             color = C.muted, style = MaterialTheme.typography.bodyMedium)
 
         BouncyButton("Mulai", Modifier.fillMaxWidth().testTag("start_session")) {
-            store.setDurations(presets[pick].study, presets[pick].practice)
             store.startSession()
         }
 
@@ -178,6 +160,45 @@ private fun SessionSetup(store: Store) {
             MiniStat("Sesi tuntas", "${store.sessionsDone()}", C.good, Modifier.weight(1f))
             MiniStat("Waktu fokus", fmtMin(store.focusMinutes()), C.violet, Modifier.weight(1f))
         }
+    }
+}
+
+/** One duration: minus and plus in 5-minute steps, plus a row of quick picks. Saved as soon as it changes. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun DurationCard(label: String, minutes: Int, range: IntRange, quick: List<Int>, tag: String, onChange: (Int) -> Unit) {
+    Card {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(label, color = C.text, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                StepButton("−", minutes > range.first, "${tag}_minus") { onChange((minutes - 5).coerceIn(range)) }
+                Text(fmtMin(minutes), color = C.text, style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center,
+                    modifier = Modifier.width(96.dp).testTag("${tag}_value"))
+                StepButton("+", minutes < range.last, "${tag}_plus") { onChange((minutes + 5).coerceIn(range)) }
+            }
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                quick.forEach { q ->
+                    val on = q == minutes
+                    Box(
+                        Modifier.clip(RoundedCornerShape(50)).background(if (on) C.accentWash else C.surface2)
+                            .clickable { onChange(q) }.testTag("${tag}_q_$q").padding(horizontal = 12.dp, vertical = 8.dp),
+                    ) {
+                        Text(fmtMin(q), color = if (on) C.violet else C.muted, style = MaterialTheme.typography.labelLarge, maxLines = 1, softWrap = false)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun StepButton(sign: String, enabled: Boolean, tag: String, onClick: () -> Unit) {
+    Box(
+        Modifier.size(40.dp).clip(CircleShape).background(C.surface2)
+            .clickable(enabled = enabled, onClick = onClick).testTag(tag),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(sign, color = if (enabled) C.text else C.faded, style = MaterialTheme.typography.titleLarge)
     }
 }
 

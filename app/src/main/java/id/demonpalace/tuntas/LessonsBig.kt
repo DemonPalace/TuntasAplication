@@ -16,7 +16,7 @@ object LessonsBig {
     val strategies = Section(
         title = "Strategi membaca (reading strategies)",
         explain = listOf(
-            "Each TKA reading text is followed by two to four questions. Read the questions first, then the text. You will know what to look for and will not read the same paragraph three times.",
+            "Each exam reading text is followed by two to four questions. Read the questions first, then the text. You will know what to look for and will not read the same paragraph three times.",
             "Skimming is reading quickly for the general idea: the title, the first sentence of each paragraph, and the last paragraph. Use it for questions about the topic, main idea, and purpose.",
             "ID: Skimming (membaca sekilas) dipakai untuk soal topik, ide pokok, dan tujuan teks. Cukup baca judul, kalimat pertama tiap paragraf, dan paragraf terakhir.",
             "Scanning is searching for one piece of information: a name, a number, a date, a place. Take the key word from the question (when, where, how many) and move your eyes down the text until you find it.",
@@ -417,7 +417,7 @@ object LessonsBig {
     val comparing = Section(
         title = "Membandingkan dua teks (comparing two texts)",
         explain = listOf(
-            "TKA can show two short texts on the same topic and ask how they are similar or different, or what conclusion follows from both.",
+            "An exam can show two short texts on the same topic and ask how they are similar or different, or what conclusion follows from both.",
             "Similarity signals: similarly, likewise, both, also. Difference signals: whereas, while, unlike, on the other hand, in contrast.",
             "ID: Soal dua teks (paired texts) menanyakan persamaan, perbedaan, atau simpulan gabungan. Baca ide pokok tiap teks dulu, lalu bandingkan.",
             "Synthesizing means combining information from both texts. The correct option must be supported by Text 1 and Text 2 together, not by only one of them.",

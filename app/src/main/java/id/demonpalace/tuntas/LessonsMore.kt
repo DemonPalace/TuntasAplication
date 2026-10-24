@@ -16,7 +16,7 @@ object LessonsMore {
             "Persamaan kuadrat berbentuk §ax^2 + bx + c = 0§ dengan §a \\neq 0§. Nilai x yang memenuhinya disebut akar, dan banyaknya paling banyak dua.",
             "Ada tiga cara mencari akar. PEMFAKTORAN dipakai kalau ada dua bilangan yang hasil kalinya §ac§ dan jumlahnya §b§. RUMUS ABC selalu berhasil. MELENGKAPKAN KUADRAT jarang ditanyakan langsung, tetapi menjadi dasar rumus puncak parabola.",
             "Diskriminan §D = b^2 - 4ac§ menentukan jenis akar tanpa menghitungnya. Jika §D > 0§, ada dua akar real berbeda. Jika §D = 0§, akarnya kembar. Jika §D < 0§, tidak ada akar real.",
-            "Soal TKA sering tidak meminta akarnya, tetapi meminta nilai yang tersusun dari akar, misalnya §x_1^2 + x_2^2§ atau §\\frac{1}{x_1} + \\frac{1}{x_2}§. Nilai seperti ini dihitung dari jumlah dan hasil kali akar, jadi akarnya tidak perlu dicari.",
+            "Soal ujian sering tidak meminta akarnya, tetapi meminta nilai yang tersusun dari akar, misalnya §x_1^2 + x_2^2§ atau §\\frac{1}{x_1} + \\frac{1}{x_2}§. Nilai seperti ini dihitung dari jumlah dan hasil kali akar, jadi akarnya tidak perlu dicari.",
         ),
         formulas = listOf(
             "§x_{1,2} = \\dfrac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}§",
@@ -316,7 +316,7 @@ object LessonsMore {
     val jenisTeksInformasi = Section(
         title = "Jenis & struktur teks informasi",
         explain = listOf(
-            "Teks informasi dalam TKA berupa teks eksposisi, teks eksplanasi, teks laporan hasil observasi, berita, dan artikel. Jenis teks dikenali dari tujuan dan strukturnya, bukan dari topiknya.",
+            "Teks informasi dalam soal ujian berupa teks eksposisi, teks eksplanasi, teks laporan hasil observasi, berita, dan artikel. Jenis teks dikenali dari tujuan dan strukturnya, bukan dari topiknya.",
             "TEKS EKSPOSISI menyampaikan pendapat penulis dengan alasan. Strukturnya tesis (pendapat), rangkaian argumen (data, fakta, pendapat ahli), dan penegasan ulang. Penegasan ulang biasanya diawali kata seperti \"dengan demikian\" atau \"oleh karena itu\" dan isinya mengulang tesis dengan kalimat lain.",
             "TEKS EKSPLANASI menjelaskan proses terjadinya fenomena alam atau sosial. Strukturnya identifikasi fenomena, rangkaian kejadian yang memuat hubungan sebab-akibat atau urutan waktu, dan ulasan. Contohnya teks tentang terjadinya gempa bumi atau inflasi.",
             "TEKS LAPORAN HASIL OBSERVASI menggambarkan suatu objek secara umum berdasarkan pengamatan. Strukturnya pernyataan umum atau klasifikasi, deskripsi bagian, dan simpulan. Bahasanya objektif dan memakai istilah ilmiah.",

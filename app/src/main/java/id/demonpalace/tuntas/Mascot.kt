@@ -190,10 +190,10 @@ fun Mascot(mood: MascotMood, modifier: Modifier = Modifier, size: Dp = 96.dp) {
     val rim = C.mascotRim
     val rimOn = C.dark
     Canvas(
-        modifier.size(size * 1.3f, size * 1.42f).testTag("mascot")
+        modifier.size(size * 1.4f, size * 1.42f).testTag("mascot")
             .pointerInput(Unit) { detectTapGestures { taps++ } },
     ) {
-        val w = this.size.width / 1.3f
+        val w = this.size.width / 1.4f
         val h = w * 1.2f
         val left = (this.size.width - w) / 2
         val top = this.size.height - h
@@ -212,7 +212,8 @@ fun Mascot(mood: MascotMood, modifier: Modifier = Modifier, size: Dp = 96.dp) {
             hello * (-25f + sin(local * 2 * PI.toFloat() * 2.5f) * 14f) +
             write * (25f + sin(local * 2 * PI.toFloat() * 4f) * 6f) -
             25f * stretch - 10f * bump(acts, 0.89f, 0.97f) * on
-        val right = ArmPose(rAngle, rL.value, rB.value + wave * 3f)
+        // Writing pulls the hand in, so the pencil sweeping sideways stays inside the canvas.
+        val right = ArmPose(rAngle, rL.value - 12f * write, rB.value + wave * 3f)
         val leftArm = ArmPose(lA.value - wave * amp.value * 0.6f + 100f * stretch, lL.value, lB.value)
         val pencilAngle = rAngle - 30f + 130f * write + 360f * (spin.value + twirl)
         val tuck = hop.value * 5f

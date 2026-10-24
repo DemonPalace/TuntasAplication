@@ -118,7 +118,7 @@ object LessonsExtra {
     private val spltv = Section(
         title = "Sistem persamaan linear tiga variabel",
         explain = listOf(
-            "Sistem persamaan linear tiga variabel (SPLTV) terdiri dari tiga persamaan dengan tiga variabel, misalnya x, y, dan z. Kisi-kisi TKA membatasi soal sampai paling banyak 3 variabel.",
+            "Sistem persamaan linear tiga variabel (SPLTV) terdiri dari tiga persamaan dengan tiga variabel, misalnya x, y, dan z. Soal sekolah umumnya paling banyak 3 variabel.",
             "Idenya sama dengan SPLDV: kurangi jumlah variabel satu per satu. Pilih satu variabel, lalu eliminasi variabel itu dari dua pasang persamaan. Hasilnya dua persamaan dengan dua variabel (SPLDV). Selesaikan SPLDV itu, lalu substitusi kembali untuk mendapat variabel ketiga.",
             "Selalu cek jawaban ke ketiga persamaan. Kalau satu saja tidak cocok, ada salah hitung.",
             "Soal cerita (harga barang, umur, campuran) diubah dulu menjadi tiga persamaan. Tuliskan apa arti setiap variabel supaya tidak tertukar.",
@@ -527,7 +527,7 @@ object LessonsExtra {
     private val trigLengkap = Section(
         title = "Enam perbandingan trigonometri & sudut berelasi",
         explain = listOf(
-            "Selain sin, cos, dan tan, ada tiga perbandingan kebalikannya: kosekan §\\csc = 1 / \\sin§ = miring/depan, sekan §\\sec = 1 / \\cos§ = miring/samping, dan kotangen §\\cot = 1 / \\tan§ = samping/depan. Kisi-kisi TKA menyebut keenamnya.",
+            "Selain sin, cos, dan tan, ada tiga perbandingan kebalikannya: kosekan §\\csc = 1 / \\sin§ = miring/depan, sekan §\\sec = 1 / \\cos§ = miring/samping, dan kotangen §\\cot = 1 / \\tan§ = samping/depan. Soal bisa memakai keenamnya.",
             "Kalau diketahui satu perbandingan, gambarlah segitiga siku-sikunya, cari sisi ketiga dengan Pythagoras, lalu semua perbandingan lain bisa dibaca.",
             "Untuk sudut lebih dari 90°, tanda nilainya bergantung kuadran. Kuadran I (0°–90°): semua positif. Kuadran II (90°–180°): hanya sin dan csc positif. Kuadran III (180°–270°): hanya tan dan cot positif. Kuadran IV (270°–360°): hanya cos dan sec positif. Jembatan keledai: \"semua–sindikat–tangan–kosong\".",
             "Sudut berelasi mengubah sudut besar ke sudut lancip: §\\sin (180^\\circ - \\alpha) = \\sin \\alpha§, §\\cos (180^\\circ - \\alpha) = - \\cos \\alpha§, §\\sin (180^\\circ + \\alpha) = - \\sin \\alpha§, §\\cos (360^\\circ - \\alpha) = \\cos \\alpha§. Nilainya sama dengan sudut lancipnya, tandanya mengikuti kuadran.",
@@ -560,7 +560,7 @@ object LessonsExtra {
     private val diagramData = Section(
         title = "Membaca diagram & tabel",
         explain = listOf(
-            "Soal data di TKA sering dimulai dengan diagram. Diagram batang membandingkan banyak kategori. Diagram garis menunjukkan perubahan dari waktu ke waktu (naik atau turun). Diagram lingkaran menunjukkan bagian dari keseluruhan.",
+            "Soal data sering dimulai dengan diagram. Diagram batang membandingkan banyak kategori. Diagram garis menunjukkan perubahan dari waktu ke waktu (naik atau turun). Diagram lingkaran menunjukkan bagian dari keseluruhan.",
             "Pada diagram lingkaran, satu lingkaran penuh = §360^\\circ = 100\\%§ = seluruh data. Jadi banyak data suatu kategori = §\\frac{\\text{sudut}}{360^\\circ} \\times \\text{total}§, atau §\\frac{\\text{persen}}{100} \\times \\text{total}§.",
             "Sebelum menghitung, baca dulu judul, satuan, dan skala sumbunya. Banyak jawaban salah muncul karena skala sumbu tidak mulai dari nol atau satuannya ribuan.",
             "Persentase perubahan = (nilai baru − nilai lama)/nilai lama × 100%. Pembaginya selalu nilai LAMA.",
@@ -686,7 +686,7 @@ object LessonsExtra {
     private val kerangkaTeks = Section(
         title = "Kerangka & bagan teks",
         explain = listOf(
-            "Kisi-kisi TKA meminta kamu mampu menyusun kerangka atau bagan dari bagian-bagian penting teks. Kerangka adalah daftar ide pokok setiap paragraf menurut urutannya, jadi kerangka menunjukkan \"peta\" sebuah teks.",
+            "Kamu perlu mampu menyusun kerangka atau bagan dari bagian-bagian penting teks. Kerangka adalah daftar ide pokok setiap paragraf menurut urutannya, jadi kerangka menunjukkan \"peta\" sebuah teks.",
             "Cara menyusun kerangka: (1) temukan ide pokok setiap paragraf, (2) tulis dalam bentuk frasa singkat, (3) urutkan sesuai teks. Pilihan jawaban yang benar memuat SEMUA paragraf dengan urutan yang sama.",
             "Bagan dipakai sesuai pola teks. Teks sebab-akibat memakai bagan panah (penyebab → akibat). Teks proses memakai bagan urutan langkah. Teks klasifikasi memakai bagan pohon (kelompok besar bercabang menjadi jenis-jenisnya).",
         ),
@@ -706,7 +706,7 @@ object LessonsExtra {
     private val teksJamak = Section(
         title = "Teks jamak: membandingkan dua teks",
         explain = listOf(
-            "TKA memakai teks informasi tunggal dan jamak. Teks jamak berarti kamu membaca dua teks (atau teks dan infografik) dengan topik yang sama, lalu diminta mencari persamaan, perbedaan, atau hubungan keduanya.",
+            "Soal membaca memakai teks informasi tunggal dan jamak. Teks jamak berarti kamu membaca dua teks (atau teks dan infografik) dengan topik yang sama, lalu diminta mencari persamaan, perbedaan, atau hubungan keduanya.",
             "Langkahnya: (1) tentukan topik bersama, (2) tentukan fokus atau sudut pandang masing-masing teks, (3) tentukan apakah kedua teks saling mendukung, saling melengkapi, atau bertentangan.",
             "Persamaan biasanya ada pada topik. Perbedaan biasanya ada pada fokus, sudut pandang, data yang dipakai, atau simpulan penulis.",
         ),
@@ -771,7 +771,7 @@ object LessonsExtra {
         title = "Puisi: unsur, makna & suasana",
         explain = listOf(
             "Puisi memadatkan makna dalam sedikit kata. Unsur pembangunnya antara lain tema, diksi (pilihan kata), imaji (kata yang membangkitkan pancaindra, misalnya penglihatan atau pendengaran), majas, rima, tipografi, dan amanat.",
-            "Kisi-kisi TKA meminta kamu menyimpulkan respons emosional terhadap puisi. Caranya, perhatikan diksi yang membangun suasana. Kata seperti sepi, layu, dan pergi membangun suasana sedih. Kata seperti fajar, mekar, dan berlari membangun suasana semangat atau gembira.",
+            "Soal puisi sering meminta kamu menyimpulkan respons emosional terhadap puisi. Caranya, perhatikan diksi yang membangun suasana. Kata seperti sepi, layu, dan pergi membangun suasana sedih. Kata seperti fajar, mekar, dan berlari membangun suasana semangat atau gembira.",
             "Untuk menafsirkan makna, ubah dulu bahasa kias menjadi bahasa biasa, lalu hubungkan dengan judul dan bait lainnya.",
         ),
         examples = listOf(
@@ -831,7 +831,7 @@ object LessonsExtra {
     private val kalimatTandaBaca = Section(
         title = "Kalimat kompleks, konjungsi & tanda baca",
         explain = listOf(
-            "Kisi-kisi TKA menyebut teks dengan kalimat kompleks berbagai pola. Kalimat majemuk setara menggabungkan dua klausa yang sederajat dengan dan, atau, tetapi. Kalimat majemuk bertingkat terdiri dari induk kalimat dan anak kalimat yang ditandai karena, ketika, jika, meskipun, sehingga, atau agar.",
+            "Teks bacaan sering memakai kalimat kompleks berbagai pola. Kalimat majemuk setara menggabungkan dua klausa yang sederajat dengan dan, atau, tetapi. Kalimat majemuk bertingkat terdiri dari induk kalimat dan anak kalimat yang ditandai karena, ketika, jika, meskipun, sehingga, atau agar.",
             "Aturan koma pada kalimat bertingkat (PUEBI): pakai koma kalau anak kalimat berada DI DEPAN induk kalimat (\"Meskipun lelah, ia tetap belajar.\"). Jangan pakai koma kalau anak kalimat berada di belakang (\"Ia tetap belajar meskipun lelah.\").",
             "Konjungsi antarparagraf yang disebut kisi-kisi bermakna pertentangan (namun, akan tetapi, sebaliknya) dan sebab-akibat (oleh karena itu, akibatnya, dengan demikian). Kata-kata ini menunjukkan hubungan antara paragraf sebelum dan sesudahnya.",
             "Kata umum maknanya luas (bunga), sedangkan kata khusus maknanya sempit (melati). Tanda titik dua dipakai sebelum rincian, dan tanda petik dipakai untuk kutipan langsung.",

@@ -278,7 +278,7 @@ object Lessons {
                     "Setiap paragraf yang baik hanya membicarakan SATU gagasan utama, disebut ide pokok. Ide pokok biasanya dinyatakan dalam satu kalimat utama, sedangkan kalimat lain (kalimat penjelas) memberi alasan, contoh, data, atau rincian.",
                     "Letak kalimat utama menentukan jenis paragraf. Deduktif: kalimat utama di awal, lalu dijelaskan. Induktif: rincian dulu, lalu disimpulkan di akhir. Campuran: di awal dan diulang di akhir.",
                     "Cara menguji: kalimat utama bersifat UMUM dan bisa \"memayungi\" kalimat lain. Kalau sebuah kalimat hanya menyebut satu contoh atau satu angka, itu kalimat penjelas.",
-                    "Di TKA, teks berpanjang 250–300 kata dan sering berisi beberapa paragraf. Ide pokok seluruh teks didapat dengan menggabungkan ide pokok tiap paragraf.",
+                    "Di soal ujian, teks berpanjang 250–300 kata dan sering berisi beberapa paragraf. Ide pokok seluruh teks didapat dengan menggabungkan ide pokok tiap paragraf.",
                 ),
                 examples = listOf(
                     ex("\"Membaca setiap hari memberi banyak manfaat. Kosakata bertambah, kemampuan berpikir kritis terasa lebih tajam, dan konsentrasi meningkat. Selain itu, membaca dapat menurunkan stres.\" Apa ide pokoknya?",
@@ -331,7 +331,7 @@ object Lessons {
             Section(
                 title = "Konjungsi: pertentangan & sebab-akibat",
                 explain = listOf(
-                    "Kisi-kisi TKA menyebut khusus wacana dengan konjungsi pertentangan atau sebab-akibat. Konjungsi adalah kata penghubung yang memberi tahu hubungan antara dua gagasan.",
+                    "Soal membaca sering memakai wacana dengan konjungsi pertentangan atau sebab-akibat. Konjungsi adalah kata penghubung yang memberi tahu hubungan antara dua gagasan.",
                     "Pertentangan menunjukkan dua hal yang berlawanan: namun, tetapi, padahal, sedangkan, meskipun, walaupun. Sebab-akibat menunjukkan alasan dan hasil: karena, sebab (sebab); sehingga, akibatnya, oleh karena itu, maka (akibat).",
                     "Konjungsi sering menjadi kunci jawaban. Kalimat setelah \"namun\" biasanya berisi gagasan yang ingin ditekankan penulis.",
                 ),
@@ -547,7 +547,7 @@ object Lessons {
                 title = "Unsur intrinsik cerita",
                 explain = listOf(
                     "Unsur intrinsik adalah unsur yang membangun cerita dari dalam: tema (gagasan dasar), alur (rangkaian peristiwa), tokoh dan penokohan (watak tokoh), latar (tempat, waktu, suasana), sudut pandang (posisi pencerita), dan amanat (pesan moral).",
-                    "Kisi-kisi TKA menyebut teks fiksi dengan tokoh berkarakter bulat (wataknya berkembang), konflik jamak, serta alur dan sudut pandang campuran. Jadi kamu perlu jeli melihat kilas balik (flashback) dan perubahan watak tokoh.",
+                    "Teks fiksi di soal ujian sering punya tokoh berkarakter bulat (wataknya berkembang), konflik jamak, serta alur dan sudut pandang campuran. Jadi kamu perlu jeli melihat kilas balik (flashback) dan perubahan watak tokoh.",
                     "Sudut pandang orang pertama memakai \"aku\" atau \"saya\". Pelaku utama kalau \"aku\" adalah tokoh yang mengalami konflik; pelaku sampingan kalau \"aku\" hanya menceritakan tokoh lain. Sudut pandang orang ketiga memakai \"dia\" atau nama tokoh.",
                     "Amanat tidak ditulis langsung. Cari dari AKIBAT perbuatan tokoh: perbuatan yang berakibat buruk berarti jangan ditiru.",
                 ),
@@ -669,7 +669,7 @@ object Lessons {
                     "Ukuran pemusatan data ada tiga. Mean (rata-rata) = jumlah semua data ÷ banyak data. Median = nilai tengah setelah data DIURUTKAN; kalau banyak data genap, rata-ratakan dua data tengah. Modus = data yang paling sering muncul.",
                     "Jangkauan mengukur sebaran: data terbesar − data terkecil.",
                     "Soal rata-rata gabungan: jangan merata-ratakan rata-rata. Ubah dulu menjadi JUMLAH nilai (n × rata-rata), baru dihitung.",
-                    "Di TKA, data sering disajikan dalam tabel atau grafik. Baca judul, satuan, dan skala sumbu sebelum menghitung.",
+                    "Di soal ujian, data sering disajikan dalam tabel atau grafik. Baca judul, satuan, dan skala sumbu sebelum menghitung.",
                 ),
                 formulas = listOf("§\\bar{x} = \\dfrac{\\Sigma x}{n}§", "Median: urutkan dulu; jika n genap §Me = \\dfrac{x_{n/2} + x_{n/2 + 1}}{2}§", "§J = x_{\\text{maks}} - x_{\\text{min}}§", "§\\text{Total} = n \\times \\bar{x}§"),
                 examples = listOf(
