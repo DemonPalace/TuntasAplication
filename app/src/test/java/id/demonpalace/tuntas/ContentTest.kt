@@ -87,7 +87,7 @@ class ContentTest {
     }
 
     /** House style: no emoji, no em-dash, no chatbot filler in what the books and quizzes say. */
-    @Test fun textHasNoChatbotFiller() {
+    @Test fun textHasNoFiller() {
         val emoji = Regex("[\\x{1F300}-\\x{1FAFF}\\x{2600}-\\x{27BF}]")
         val banned = listOf("Mari kita", "Yuk", "Semangat", "Dalam bab ini", "pada dasarnya", "perlu diingat", "penting untuk dipahami",
             "tidak dapat dipungkiri", "Let's", "dive in", "Mantap", "Keren")

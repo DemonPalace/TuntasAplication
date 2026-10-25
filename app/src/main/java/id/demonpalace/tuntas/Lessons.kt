@@ -3,7 +3,7 @@ package id.demonpalace.tuntas
 /**
  * Textbook-style lesson cards: explanation first, then the formula and why it works,
  * worked examples step by step, common traps, and a short summary to tick off.
- * Scope follows the TKA SMA 2026 kisi-kisi listed in [Content.sources].
+ * Scope follows the SMA 2026 kisi-kisi listed in [Content.sources].
  */
 object Lessons {
 

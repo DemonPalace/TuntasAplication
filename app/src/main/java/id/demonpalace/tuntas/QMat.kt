@@ -1,7 +1,7 @@
 package id.demonpalace.tuntas
 
 /**
- * Chapter quizzes for the Matematika book, written in the style of the TKA SMA practice sets
+ * Chapter quizzes for the Matematika book, written in the style of the SMA practice sets
  * listed in [Content.sources] (detik, Blog ITERA, Kompeten). Every key was recomputed.
  */
 object QMat {

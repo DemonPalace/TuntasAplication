@@ -2,7 +2,7 @@ package id.demonpalace.tuntas
 
 /**
  * Chapter quizzes for the B. Inggris book. Passages are written for this app in the format of
- * the TKA SMA reading models; questions are in English, explanations in Indonesian.
+ * the SMA reading models; questions are in English, explanations in Indonesian.
  * The people in the stories and the school events are fictional.
  */
 object QBig {

@@ -27,7 +27,7 @@ data class Section(
 )
 
 /**
- * A question in one of the three TKA formats: single answer ([answer]), pilihan ganda kompleks
+ * A question in one of the three exam formats: single answer ([answer]), pilihan ganda kompleks
  * with several correct options ([multi]), or a category table where each row in [rows] takes one
  * of the [options] as its column, keyed by [rowKeys].
  */

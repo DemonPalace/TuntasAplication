@@ -1,7 +1,7 @@
 package id.demonpalace.tuntas
 
 /**
- * Chapter quizzes for the Fisika book. Numbers follow the style of the TKA Fisika models
+ * Chapter quizzes for the Fisika book. Numbers follow the style of the Fisika models
  * (GNFI/Pusmendik, Blog ITERA); g = 10 m/s² unless stated. Every key was recomputed.
  */
 object QFis {

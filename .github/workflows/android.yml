@@ -30,18 +30,28 @@ jobs:
         with:
           name: TUNTAS-apk
           path: TUNTAS.apk
+      - name: Hapus rilis lama
+        if: github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release delete latest --cleanup-tag -y || true
       - name: Publish "latest" release
         if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
-          name: Tuntas (versi terbaru)
+          name: Tuntas, build terbaru
           prerelease: false
           make_latest: true
           files: TUNTAS.apk
           body: |
-            Unduh **TUNTAS.apk** di bawah lalu buka di HP Android untuk memasang.
-            Build otomatis dari commit ${{ github.sha }}.
+            Tuntas, aplikasi belajar untuk ujian SMA 2026: Matematika, B. Indonesia, B. Inggris, dan Fisika.
+
+            Isinya empat buku per mapel, 512 soal dengan pembahasan, peta belajar per subbab, progres harian, dan sesi harian.
+
+            Pasang: unduh TUNTAS.apk lewat HP Android, buka, dan izinkan "Instal dari sumber tidak dikenal" kalau diminta. Kalau versi lain sudah terpasang, hapus dulu karena tanda tangannya beda.
+
+            Build dari commit ${{ github.sha }}.
 
   qc:
     needs: build

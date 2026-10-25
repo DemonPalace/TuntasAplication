@@ -1,7 +1,7 @@
 package id.demonpalace.tuntas
 
 /**
- * Sub-chapters that close the gaps between [Lessons] and the full TKA SMA 2026 kisi-kisi
+ * Sub-chapters that close the gaps between [Lessons] and the full SMA 2026 kisi-kisi
  * (Pusmendik, via Brain Academy / ITERA / CNN). Each entry rebuilds a step's section list
  * from the base sections so new topics land in a sensible reading order.
  */

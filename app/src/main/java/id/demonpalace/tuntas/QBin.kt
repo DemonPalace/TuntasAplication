@@ -2,7 +2,7 @@ package id.demonpalace.tuntas
 
 /**
  * Chapter quizzes for the Bahasa Indonesia book. Passages are written for this app in the
- * format of the TKA SMA reading models (teks informasi and teks fiksi, tunggal and jamak).
+ * format of the SMA reading models (teks informasi and teks fiksi, tunggal and jamak).
  * Places and people in the news passages are fictional.
  */
 object QBin {

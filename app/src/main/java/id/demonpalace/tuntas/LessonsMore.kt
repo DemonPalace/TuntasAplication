@@ -2,7 +2,7 @@ package id.demonpalace.tuntas
 
 /**
  * Sub-chapters added when the books were cut into about ten chapters per subject.
- * [Chapters] places them; scope follows the TKA SMA 2026 kisi-kisi in [Content.sources].
+ * [Chapters] places them; scope follows the SMA 2026 kisi-kisi in [Content.sources].
  */
 object LessonsMore {
 

@@ -1,8 +1,8 @@
 package id.demonpalace.tuntas
 
 /**
- * Question packs taken from practice files Nopal shared (Kompeten TKA paket 100 soal,
- * Pusmendik-style B. Inggris sample, and a B. Inggris worksheet). Generated, edit with care.
+ * Question packs taken from practice files shared (Kompeten paket 100 soal,
+ * Pusmendik-style B. Inggris sample, and a B. Inggris worksheet).
  * Each pack sits in its own function so no single method grows past the JVM size limit.
  */
 object Bank {
