@@ -54,7 +54,7 @@ Cakupan materi mengikuti kisi-kisi Ujian SMA 2026 dari Pusmendik. Soal sebagian 
 
 ## Maskot
 
-Tuti si Buku, gambar vektor buatan sendiri.
+Tuti si Buku.
 
 ## Lisensi
 
