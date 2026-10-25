@@ -93,7 +93,9 @@ jobs:
           cp -r app/build/reports/androidTests qc-out/reports 2>/dev/null || true
           cp -r app/build/outputs/androidTest-results qc-out/results 2>/dev/null || true
           mkdir -p qc-out/screens
-          find app/build/outputs/connected_android_test_additional_output -name "*.png" -exec cp {} qc-out/screens/ \; 2>/dev/null || true
+          find app/build -name "*.png" -path "*additional*" -exec cp {} qc-out/screens/ \; 2>/dev/null || true
+          find app/build/outputs -maxdepth 3 > qc-out/DEBUG.txt 2>&1 || true
+          grep -ho 'tests="[0-9]*"[^>]*failures="[0-9]*"' qc-out/results/connected/debug/*.xml >> qc-out/DEBUG.txt 2>&1 || true
           ls qc-out/screens | head -50
       - name: Push screenshots to qc-screenshots branch
         if: always()
