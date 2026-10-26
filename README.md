@@ -68,3 +68,13 @@ Released under the [MIT License](LICENSE).
 <img src="https://capsule-render.vercel.app/api?type=waving&color=0:6f8bff,100:3347d0&height=90&section=footer" width="100%" alt="" />
 
 </div>
+
+## Build from source
+
+You need JDK 17 and the Android SDK (API 34).
+
+```bash
+./gradlew assembleDebug
+```
+
+The APK ends up in `app/build/outputs/apk/debug/app-debug.apk`. Unit tests run with `./gradlew testDebugUnitTest`.
